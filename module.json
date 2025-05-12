@@ -1,0 +1,63 @@
+{
+    "id": "token-action-hud-ds4",
+    "title": "Token Action HUD DS4",
+    "description": "Token Action HUD is a repositionable HUD of actions for a selected token",
+    "authors": [
+        {
+            "name": "Larkinabout",
+            "url": "https://github.com/Larkinabout"
+        }
+    ],
+    "url": "This is auto replaced",
+    "flags": {},
+    "version": "This is auto replaced",
+    "compatibility": {
+        "minimum": "12.331",
+        "verified": "13.342"
+    },
+    "esmodules": ["./scripts/init.js"],
+    "scripts": [],
+    "styles": ["./styles/tah-ds4-style.css"],
+    "languages": [
+        {
+            "lang": "en",
+            "name": "English",
+            "path": "languages/en.json"
+        }
+    ],
+    "packs": [],
+    "relationships": {
+        "systems": [
+            {
+                "id": "ds4",
+                "compatibility": {
+                    "minimum": "2.0.0",
+                    "maximum": "2.0.99",
+                    "verified": "2.0.5"
+                }
+            }
+        ],
+        "requires": [
+            {
+                "id": "token-action-hud-core",
+                "type": "module",
+                "compatibility": {
+                    "minimum": "2.0.11",
+                    "maximum": "2.0.99",
+                    "verified": "2.0.12"
+                }
+            }
+        ],
+        "optional": [],
+        "flags": {
+            "optional": []
+        }
+    },
+    "socket": false,
+    "manifest": "This is auto replaced",
+    "download": "This is auto replaced",
+    "readme": "https://github.com/Larkinabout/fvtt-token-action-hud-template#readme",
+    "protected": false,
+    "coreTranslation": false,
+    "library": false
+}
