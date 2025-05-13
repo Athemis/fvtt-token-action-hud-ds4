@@ -4,8 +4,8 @@
     "description": "Token Action HUD is a repositionable HUD of actions for a selected token",
     "authors": [
         {
-            "name": "Larkinabout",
-            "url": "https://github.com/Larkinabout"
+            "name": "Athemis",
+            "url": "https://github.com/Athemis"
         }
     ],
     "url": "This is auto replaced",
@@ -23,6 +23,11 @@
             "lang": "en",
             "name": "English",
             "path": "languages/en.json"
+        },
+        {
+            "lang": "de",
+            "name": "Deutsch",
+            "path": "languages/de.json"
         }
     ],
     "packs": [],
@@ -56,7 +61,7 @@
     "socket": false,
     "manifest": "This is auto replaced",
     "download": "This is auto replaced",
-    "readme": "https://github.com/Larkinabout/fvtt-token-action-hud-template#readme",
+    "readme": "https://github.com/Athemis/fvtt-token-action-hud-ds4#readme",
     "protected": false,
     "coreTranslation": false,
     "library": false
