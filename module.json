@@ -15,7 +15,7 @@
         "minimum": "12.331",
         "verified": "13.342"
     },
-    "esmodules": ["./scripts/init.js"],
+    "esmodules": ["./scripts/token-action-hud-ds4.min.js"],
     "scripts": [],
     "styles": ["./styles/tah-ds4-style.css"],
     "languages": [
