@@ -3,8 +3,8 @@
         "ds4": {
             "settings": {
                 "displayUnequipped": {
-                    "hint": "Choose whether to display unequipped items on the HUD",
-                    "name": "Display Unequipped"
+                    "hint": "Sollen nicht ausgerüstete Gegenstände im HUD angezeigt werden?",
+                    "name": "Nicht ausgerüstete zeigen"
                 }
             }
         }
