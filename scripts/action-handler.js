@@ -70,7 +70,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
           const name = coreModule.api.Utils.i18n(
             `DS4.Checks${abilityId.charAt(0).toUpperCase() + abilityId.slice(1)}`,
           );
-          const img = "";
+          const img = CONFIG.DS4.icons.checks[abilityId];
           const listName = `${actionType}${coreModule.api.Utils.i18n(`DS4.Checks${abilityId}`)}`;
           const encodedValue = [actionType, abilityId].join(this.delimiter);
           const info1 = { text: ability[1].value };
