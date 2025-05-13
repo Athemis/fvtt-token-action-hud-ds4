@@ -17,22 +17,25 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
     async buildSystemActions(groupIds) {
       try {
         // Set actor and token variables
-        this.actors = !this.actor ? this._getActors() : [this.actor];
-        this.actorType = this.actor?.type;
-
+        this.actors = !this.actor ? this.#getSelectedActors() : [this.actor];
+        
         // Settings
         this.displayUnequipped = Utils.getSetting("displayUnequipped");
-
-        // Set items variable
+        
         if (this.actor) {
+          // Handle single actor
+          this.actorType = this.actor.type;
+          
+          // Set items variable
           let items = this.actor.items;
           items = coreModule.api.Utils.sortItemsByName(items);
           this.items = items;
-        }
-
-        if (this.actorType === "character" || this.actorType === "creature") {
-          this.#buildCharacterActions();
-        } else if (!this.actor) {
+          
+          if (this.actorType === "character" || this.actorType === "creature") {
+            this.#buildCharacterActions();
+          }
+        } else {
+          // Handle multiple actors
           this.#buildMultipleTokenActions();
         }
       } catch (error) {
@@ -60,11 +63,45 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
      * Build multiple token actions
      * @private
      * @returns {object}
-     * @todo Implement this method for handling multiple token selections
      */
     #buildMultipleTokenActions() {
-      // This method will be implemented in a future update
-      // for handling actions when multiple tokens are selected
+      if (!this.actors || this.actors.length === 0) return;
+      
+      try {
+        // Create a utility group for multiple token selection
+        const groupData = { id: "token", type: "system" };
+        
+        // Add selected tokens count
+        const tokenCountInfo = {
+          id: "token-count-info",
+          name: `${this.actors.length} tokens selected`,
+          encodedValue: ["utility", "tokenCount"].join(this.delimiter),
+          cssClass: "inactive"
+        };
+        
+        this.addActions([tokenCountInfo], groupData);
+      } catch (error) {
+        console.error(`Error building multiple token actions: ${error.message}`);
+      }
+    }
+    
+    /**
+     * Get all selected actors
+     * @private
+     * @returns {Array} Array of selected actors
+     */
+    #getSelectedActors() {
+      try {
+        const tokens = canvas.tokens.controlled;
+        if (!tokens || tokens.length === 0) return [];
+        
+        return tokens
+          .filter(token => token.actor)
+          .map(token => token.actor);
+      } catch (error) {
+        console.error(`Error getting selected actors: ${error.message}`);
+        return [];
+      }
     }
 
     /**
