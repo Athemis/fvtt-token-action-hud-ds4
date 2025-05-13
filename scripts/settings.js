@@ -6,19 +6,27 @@ import { MODULE } from "./constants.js";
  * @param {function} coreUpdate Token Action HUD Core update function
  */
 export function register(coreUpdate) {
-  game.settings.register(MODULE.ID, "displayUnequipped", {
-    name: game.i18n.localize(
-      "tokenActionHud.ds4.settings.displayUnequipped.name",
-    ),
-    hint: game.i18n.localize(
-      "tokenActionHud.ds4.settings.displayUnequipped.hint",
-    ),
-    scope: "client",
-    config: true,
-    type: Boolean,
-    default: true,
-    onChange: (value) => {
-      coreUpdate(value);
-    },
-  });
+  try {
+    game.settings.register(MODULE.ID, "displayUnequipped", {
+      name: game.i18n.localize(
+        "tokenActionHud.ds4.settings.displayUnequipped.name"
+      ),
+      hint: game.i18n.localize(
+        "tokenActionHud.ds4.settings.displayUnequipped.hint"
+      ),
+      scope: "client",
+      config: true,
+      type: Boolean,
+      default: true,
+      onChange: (value) => {
+        try {
+          coreUpdate(value);
+        } catch (error) {
+          console.error(`Error in displayUnequipped onChange: ${error.message}`);
+        }
+      },
+    });
+  } catch (error) {
+    console.error(`Error registering settings: ${error.message}`);
+  }
 }

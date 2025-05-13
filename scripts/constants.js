@@ -1,5 +1,6 @@
 /**
  * Module-based constants
+ * @type {{ID: string}}
  */
 export const MODULE = {
   ID: "token-action-hud-ds4",
@@ -7,6 +8,7 @@ export const MODULE = {
 
 /**
  * Core module
+ * @type {{ID: string}}
  */
 export const CORE_MODULE = {
   ID: "token-action-hud-core",
@@ -14,11 +16,13 @@ export const CORE_MODULE = {
 
 /**
  * Core module version required by the system module
+ * @type {string}
  */
 export const REQUIRED_CORE_MODULE_VERSION = "2.0";
 
 /**
- * Groups
+ * Groups configuration for the Token Action HUD
+ * @type {Object<string, {id: string, name: string, type: string, listName?: string}>}
  */
 export const GROUP = {
   spellcasting: {
@@ -46,5 +50,9 @@ export const GROUP = {
     name: "DS4.Checks",
     type: "system",
   },
-  token: { id: "token", name: "tokenActionHud.token", type: "system" },
+  token: { 
+    id: "token", 
+    name: "tokenActionHud.token", 
+    type: "system" 
+  },
 };

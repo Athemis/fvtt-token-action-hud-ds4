@@ -53,7 +53,10 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
      * @param {object} event        The event
      * @param {string} encodedValue The encoded value
      */
-    async handleActionHover(event, encodedValue) {}
+    async handleActionHover(event, encodedValue) {
+      // This method will be implemented in a future update
+      // for handling hover events on actions
+    }
 
     /**
      * Handle group click
@@ -62,7 +65,10 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
      * @param {object} event The event
      * @param {object} group The group
      */
-    async handleGroupClick(event, group) {}
+    async handleGroupClick(event, group) {
+      // This method will be implemented in a future update
+      // for handling group click events when the HUD is locked
+    }
 
     /**
      * Handle action
@@ -74,16 +80,22 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
      * @param {string} actionId     The actionId
      */
     async #handleAction(event, actor, token, actionTypeId, actionId) {
-      switch (actionTypeId) {
-        case "item":
-          this.#handleItemAction(event, actor, actionId);
-          break;
-        case "utility":
-          this.#handleUtilityAction(token, actionId);
-          break;
-        case "check":
-          this.#handleCheckAction(event, actor, token, actionId);
-          break;
+      try {
+        switch (actionTypeId) {
+          case "item":
+            this.#handleItemAction(event, actor, actionId);
+            break;
+          case "utility":
+            this.#handleUtilityAction(token, actionId);
+            break;
+          case "check":
+            this.#handleCheckAction(event, actor, token, actionId);
+            break;
+          default:
+            console.warn(`Unknown action type: ${actionTypeId}`);
+        }
+      } catch (error) {
+        ui.notifications.error(`Error handling action: ${error.message}`);
       }
     }
 
@@ -96,8 +108,11 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
      */
     #handleItemAction(event, actor, actionId) {
       const item = actor.items.get(actionId);
-      console.log(event);
-      item.roll(event);
+      try {
+        item.roll(event);
+      } catch (error) {
+        ui.notifications.error(`Error rolling item: ${error.message}`);
+      }
     }
 
     /**
@@ -108,8 +123,11 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
      * @param {string} check    The action id
      */
     #handleCheckAction(event, actor, token, checkValue) {
-      console.log(event);
-      actor.rollCheck(checkValue, token.document);
+      try {
+        actor.rollCheck(checkValue, token.document);
+      } catch (error) {
+        ui.notifications.error(`Error rolling check: ${error.message}`);
+      }
     }
 
     /**
@@ -119,12 +137,18 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
      * @param {string} actionId The action id
      */
     async #handleUtilityAction(token, actionId) {
-      switch (actionId) {
-        case "endTurn":
-          if (game.combat?.current?.tokenId === token.id) {
-            await game.combat?.nextTurn();
-          }
-          break;
+      try {
+        switch (actionId) {
+          case "endTurn":
+            if (game.combat?.current?.tokenId === token.id) {
+              await game.combat?.nextTurn();
+            }
+            break;
+          default:
+            console.warn(`Unknown utility action: ${actionId}`);
+        }
+      } catch (error) {
+        ui.notifications.error(`Error handling utility action: ${error.message}`);
       }
     }
   };

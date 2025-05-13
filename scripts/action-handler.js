@@ -15,24 +15,29 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
      * @param {array} groupIds
      */
     async buildSystemActions(groupIds) {
-      // Set actor and token variables
-      this.actors = !this.actor ? this._getActors() : [this.actor];
-      this.actorType = this.actor?.type;
+      try {
+        // Set actor and token variables
+        this.actors = !this.actor ? this._getActors() : [this.actor];
+        this.actorType = this.actor?.type;
 
-      // Settings
-      this.displayUnequipped = Utils.getSetting("displayUnequipped");
+        // Settings
+        this.displayUnequipped = Utils.getSetting("displayUnequipped");
 
-      // Set items variable
-      if (this.actor) {
-        let items = this.actor.items;
-        items = coreModule.api.Utils.sortItemsByName(items);
-        this.items = items;
-      }
+        // Set items variable
+        if (this.actor) {
+          let items = this.actor.items;
+          items = coreModule.api.Utils.sortItemsByName(items);
+          this.items = items;
+        }
 
-      if (this.actorType === "character" || this.actorType === "creature") {
-        this.#buildCharacterActions();
-      } else if (!this.actor) {
-        this.#buildMultipleTokenActions();
+        if (this.actorType === "character" || this.actorType === "creature") {
+          this.#buildCharacterActions();
+        } else if (!this.actor) {
+          this.#buildMultipleTokenActions();
+        }
+      } catch (error) {
+        console.error(`Error building system actions: ${error.message}`);
+        ui.notifications?.error(`Error building system actions: ${error.message}`);
       }
     }
 
@@ -41,61 +46,138 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
      * @private
      */
     #buildCharacterActions() {
-      this.#buildWeapons("item", ["weapon"]);
-      this.#buildSpells("item", ["spell"]);
-      this.#buildChecks("check", "checks");
+      try {
+        this.#buildWeapons("item", ["weapon"]);
+        this.#buildSpells("item", ["spell"]);
+        this.#buildChecks("check", "checks");
+      } catch (error) {
+        console.error(`Error building character actions: ${error.message}`);
+        ui.notifications?.error(`Error building character actions: ${error.message}`);
+      }
     }
 
     /**
      * Build multiple token actions
      * @private
      * @returns {object}
+     * @todo Implement this method for handling multiple token selections
      */
-    #buildMultipleTokenActions() {}
+    #buildMultipleTokenActions() {
+      // This method will be implemented in a future update
+      // for handling actions when multiple tokens are selected
+    }
 
     /**
-     * Build Skills
+     * Build Checks
      * @private
      * @param {string} actionType
      * @param {string} groupId
      */
     #buildChecks(actionType, groupId) {
-      const actions = Object.entries(this.actor.system.checks).map((check) => {
-        const checkId = check[0];
-        const id = `${actionType}-${checkId}`;
-        const label = coreModule.api.Utils.i18n(
-          `DS4.Checks${checkId.charAt(0).toUpperCase() + checkId.slice(1)}`,
-        );
-        const name = coreModule.api.Utils.i18n(
-          `DS4.Checks${checkId.charAt(0).toUpperCase() + checkId.slice(1)}`,
-        );
-        const img = CONFIG.DS4.icons.checks[checkId];
-        const listName = `${actionType}${coreModule.api.Utils.i18n(`DS4.Checks${checkId}`)}`;
-        const encodedValue = [actionType, checkId].join(this.delimiter);
-        const infoText = { text: check[1].valueOf() };
-        return {
-          id,
-          name,
-          img,
-          encodedValue,
-          info1: infoText,
-          listName,
-        };
-      });
-      const groupData = { id: groupId, type: "system" };
-      console.log(actions, groupData);
-      this.addActions(actions, groupData);
+      try {
+        if (!this.actor?.system?.checks) {
+          console.warn("Actor is missing system.checks property");
+          return;
+        }
+        
+        const actions = Object.entries(this.actor.system.checks).map((check) => {
+          const checkId = check[0];
+          const capitalizedCheckId = checkId.charAt(0).toUpperCase() + checkId.slice(1);
+          const translationKey = `DS4.Checks${capitalizedCheckId}`;
+          const id = `${actionType}-${checkId}`;
+          const label = coreModule.api.Utils.i18n(translationKey);
+          const name = coreModule.api.Utils.i18n(translationKey);
+          const img = CONFIG.DS4.icons.checks[checkId];
+          const listName = `${actionType}${coreModule.api.Utils.i18n(`DS4.Checks${checkId}`)}`;
+          const encodedValue = [actionType, checkId].join(this.delimiter);
+          const infoText = { text: check[1].valueOf() };
+          return {
+            id,
+            name,
+            img,
+            encodedValue,
+            info1: infoText,
+            listName,
+          };
+        });
+        const groupData = { id: groupId, type: "system" };
+        this.addActions(actions, groupData);
+      } catch (error) {
+        console.error(`Error building checks: ${error.message}`);
+      }
     }
 
     /**
      * Build Spells
      * @private
      * @param {string} groupId
-     * @param {string} itemTypes
+     * @param {string[]} itemTypes
      */
     #buildSpells(groupId, itemTypes) {
-      this.#buildSpellcastingSpells(groupId, itemTypes);
-      this.#buildTargetedSpellcastingSpells(groupId, itemTypes);
+      try {
+        this.#buildSpellsByType(groupId, itemTypes, "spellcasting", "spellcasting");
+        this.#buildSpellsByType(groupId, itemTypes, "targetedSpellcasting", "targeted_spellcasting");
+      } catch (error) {
+        console.error(`Error building spells: ${error.message}`);
+      }
+    }
+
+    /**
+     * Build Spells by type
+     * @private
+     * @param {string} groupId - The group ID
+     * @param {string[]} itemTypes - Array of item types to include
+     * @param {string} spellType - Type of spell ("spellcasting" or "targetedSpellcasting")
+     * @param {string} groupDataId - ID for the group data
+     */
+    #buildSpellsByType(groupId, itemTypes, spellType, groupDataId) {
+      try {
+        if (!this.actor?.system?.combatValues?.[spellType]?.total) {
+          console.warn(`Actor is missing combatValues.${spellType}`);
+          return;
+        }
+        
+        if (!this.actor.items) {
+          console.warn("Actor has no items");
+          return;
+        }
+        
+        const actionType = groupId;
+        const actions = Object.entries(
+          this.actor.items.filter(
+            (el) =>
+              itemTypes.includes(el.type) &&
+              el.system.spellType === spellType &&
+              (this.displayUnequipped || el.system.equipped === true),
+          ),
+        ).map((item) => {
+          const itemId = item[1].id;
+          const id = `${actionType}-${item[1].id}`;
+          const label = item[1].name;
+          const name = item[1].name;
+          const listName = `${actionType}${label}`;
+          const encodedValue = [actionType, itemId].join(this.delimiter);
+          const img = item[1].img;
+          const infoText = {
+            text: this.actor.system.combatValues[spellType].total.valueOf(),
+            class: "custominfo",
+          };
+          const cssClass = "";
+          return {
+            id,
+            name,
+            encodedValue,
+            info1: infoText,
+            img,
+            cssClass,
+            listName,
+          };
+        });
+        const groupData = { id: groupDataId, type: "system" };
+        this.addActions(actions, groupData);
+      } catch (error) {
+        console.error(`Error building ${spellType} spells: ${error.message}`);
+      }
     }
 
     /**
@@ -105,39 +187,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
      * @param {string} itemTypes
      */
     #buildSpellcastingSpells(groupId, itemTypes) {
-      const actionType = groupId;
-      const actions = Object.entries(
-        this.actor.items.filter(
-          (el) =>
-            itemTypes.includes(el.type) &&
-            el.system.spellType === "spellcasting" &&
-            (this.displayUnequipped || el.system.equipped === true),
-        ),
-      ).map((item) => {
-        const itemId = item[1].id;
-        const id = `${actionType}-${item[1].id}`;
-        const label = item[1].name;
-        const name = item[1].name;
-        const listName = `${actionType}${label}`;
-        const encodedValue = [actionType, itemId].join(this.delimiter);
-        const img = item[1].img;
-        const infoText = {
-          text: this.actor.system.combatValues.spellcasting.total.valueOf(),
-          class: "custominfo",
-        };
-        const cssClass = "";
-        return {
-          id,
-          name,
-          encodedValue,
-          info1: infoText,
-          img,
-          cssClass,
-          listName,
-        };
-      });
-      const groupData = { id: "spellcasting", type: "system" };
-      this.addActions(actions, groupData);
+      this.#buildSpellsByType(groupId, itemTypes, "spellcasting", "spellcasting");
     }
 
     /**
@@ -147,50 +197,83 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
      * @param {string} itemTypes
      */
     #buildTargetedSpellcastingSpells(groupId, itemTypes) {
-      const actionType = groupId;
-      const actions = Object.entries(
-        this.actor.items.filter(
-          (el) =>
-            itemTypes.includes(el.type) &&
-            el.system.spellType === "targetedSpellcasting" &&
-            (this.displayUnequipped || el.system.equipped === true),
-        ),
-      ).map((item) => {
-        const itemId = item[1].id;
-        const id = `${actionType}-${item[1].id}`;
-        const label = item[1].name;
-        const name = item[1].name;
-        const listName = `${actionType}${label}`;
-        const encodedValue = [actionType, itemId].join(this.delimiter);
-        const img = item[1].img;
-        const infoText = {
-          text: this.actor.system.combatValues.targetedSpellcasting.total.valueOf(),
-          class: "custominfo",
-        };
-        const cssClass = "";
-        return {
-          id,
-          name,
-          encodedValue,
-          info1: infoText,
-          img,
-          cssClass,
-          listName,
-        };
-      });
-      const groupData = { id: "targeted_spellcasting", type: "system" };
-      this.addActions(actions, groupData);
+      this.#buildSpellsByType(groupId, itemTypes, "targetedSpellcasting", "targeted_spellcasting");
     }
 
     /**
      * Build Weapons
      * @private
      * @param {string} groupId
-     * @param {string} itemTypes
+     * @param {string[]} itemTypes
      */
     #buildWeapons(groupId, itemTypes) {
-      this.#buildMeleeWeapons(groupId, itemTypes);
-      this.#buildRangedWeapons(groupId, itemTypes);
+      try {
+        this.#buildMeleeWeapons(groupId, itemTypes);
+        this.#buildRangedWeapons(groupId, itemTypes);
+      } catch (error) {
+        console.error(`Error building weapons: ${error.message}`);
+      }
+    }
+
+    /**
+     * Build Weapons by type
+     * @private
+     * @param {string} groupId - The group ID
+     * @param {string[]} itemTypes - Array of item types to include
+     * @param {string} attackType - Type of attack ("melee" or "ranged")
+     * @param {string} groupDataId - ID for the group data
+     */
+    #buildWeaponsByType(groupId, itemTypes, attackType, groupDataId) {
+      try {
+        if (!this.actor?.system?.combatValues?.[`${attackType}Attack`]?.total) {
+          console.warn(`Actor is missing combatValues.${attackType}Attack`);
+          return;
+        }
+
+        const actionType = groupId;
+        const attackValue = this.actor.system.combatValues[`${attackType}Attack`].total;
+        
+        if (!this.actor.items) {
+          console.warn("Actor has no items");
+          return;
+        }
+        
+        const actions = Object.entries(
+          this.actor.items.filter(
+            (el) =>
+              itemTypes.includes(el.type) &&
+              el.system.attackType === attackType &&
+              (this.displayUnequipped || el.system.equipped === true),
+          ),
+        ).map((item) => {
+          const itemId = item[1].id;
+          const id = `${actionType}-${item[1].id}`;
+          const label = item[1].name;
+          const name = item[1].name;
+          const listName = `${actionType}${label}`;
+          const encodedValue = [actionType, itemId].join(this.delimiter);
+          const img = item[1].img;
+          const weaponBonus = item[1].system.weaponBonus || 0;
+          const infoText = {
+            text: attackValue + weaponBonus,
+            class: "custominfo",
+          };
+          const cssClass = "";
+          return {
+            id,
+            name,
+            encodedValue,
+            info1: infoText,
+            img,
+            cssClass,
+            listName,
+          };
+        });
+        const groupData = { id: groupDataId, type: "system" };
+        this.addActions(actions, groupData);
+      } catch (error) {
+        console.error(`Error building ${attackType} weapons: ${error.message}`);
+      }
     }
 
     /**
@@ -200,41 +283,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
      * @param {string} itemTypes
      */
     #buildMeleeWeapons(groupId, itemTypes) {
-      const actionType = groupId;
-      const meleeAttack = this.actor.system.combatValues.meleeAttack.total;
-      const actions = Object.entries(
-        this.actor.items.filter(
-          (el) =>
-            itemTypes.includes(el.type) &&
-            el.system.attackType === "melee" &&
-            (this.displayUnequipped || el.system.equipped === true),
-        ),
-      ).map((item) => {
-        const itemId = item[1].id;
-        const id = `${actionType}-${item[1].id}`;
-        const label = item[1].name;
-        const name = item[1].name;
-        const listName = `${actionType}${label}`;
-        const encodedValue = [actionType, itemId].join(this.delimiter);
-        const img = item[1].img;
-        const weaponBonus = item[1].system.weaponBonus;
-        const infoText = {
-          text: meleeAttack + weaponBonus,
-          class: "custominfo",
-        };
-        const cssClass = "";
-        return {
-          id,
-          name,
-          encodedValue,
-          info1: infoText,
-          img,
-          cssClass,
-          listName,
-        };
-      });
-      const groupData = { id: "melee", type: "system" };
-      this.addActions(actions, groupData);
+      this.#buildWeaponsByType(groupId, itemTypes, "melee", "melee");
     }
 
     /**
@@ -244,41 +293,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
      * @param {string} itemTypes
      */
     #buildRangedWeapons(groupId, itemTypes) {
-      const actionType = groupId;
-      const rangedAttack = this.actor.system.combatValues.rangedAttack.total;
-      const actions = Object.entries(
-        this.actor.items.filter(
-          (el) =>
-            itemTypes.includes(el.type) &&
-            el.system.attackType === "ranged" &&
-            (this.displayUnequipped || el.system.equipped === true),
-        ),
-      ).map((item) => {
-        const itemId = item[1].id;
-        const id = `${actionType}-${item[1].id}`;
-        const label = item[1].name;
-        const name = item[1].name;
-        const listName = `${actionType}${label}`;
-        const encodedValue = [actionType, itemId].join(this.delimiter);
-        const img = item[1].img;
-        const weaponBonus = item[1].system.weaponBonus;
-        const infoText = {
-          text: rangedAttack + weaponBonus,
-          class: "custominfo",
-        };
-        const cssClass = "";
-        return {
-          id,
-          name,
-          encodedValue,
-          info1: infoText,
-          img,
-          cssClass,
-          listName,
-        };
-      });
-      const groupData = { id: "ranged", type: "system" };
-      this.addActions(actions, groupData);
+      this.#buildWeaponsByType(groupId, itemTypes, "ranged", "ranged");
     }
   };
 });

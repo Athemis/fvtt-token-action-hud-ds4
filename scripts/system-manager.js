@@ -16,7 +16,7 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
          * Returns an instance of the ActionHandler to Token Action HUD Core
          * Called by Token Action HUD Core
          * @override
-         * @returns {class} The ActionHandler instance
+         * @returns {ActionHandler} The ActionHandler instance
          */
         getActionHandler () {
             return new ActionHandler()
@@ -27,7 +27,7 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
          * Used to populate the Roll Handler module setting choices
          * Called by Token Action HUD Core
          * @override
-         * @returns {object} The available roll handlers
+         * @returns {Record<string, string>} The available roll handlers
          */
         getAvailableRollHandlers () {
             const coreTitle = 'Core Template'
@@ -40,7 +40,7 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
          * Called by Token Action HUD Core
          * @override
          * @param {string} rollHandlerId The roll handler ID
-         * @returns {class}              The RollHandler instance
+         * @returns {Core}               The RollHandler instance
          */
         getRollHandler (rollHandlerId) {
             let rollHandler
@@ -56,7 +56,8 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
         /**
          * Returns the default layout and groups to Token Action HUD Core
          * Called by Token Action HUD Core
-         * @returns {object} The default layout and groups
+         * @override
+         * @returns {Promise<object>} The default layout and groups
          */
         async registerDefaults () {
             return DEFAULTS
@@ -76,7 +77,7 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
          * Returns styles to Token Action HUD Core
          * Called by Token Action HUD Core
          * @override
-         * @returns {object} The TAH system styles
+         * @returns {{template: {class: string, file: string, moduleId: string, name: string}}} The TAH system styles
          */
         registerStyles () {
             return {
