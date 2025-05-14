@@ -80,6 +80,11 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
         };
         
         this.addActions([tokenCountInfo], groupData);
+        
+        // Add skill checks for multiple tokens
+        if (this.actors && this.actors.length > 0) {
+          this.#buildMultiTokenChecks("check", "checks");
+        }
       } catch (error) {
         console.error(`Error building multiple token actions: ${error.message}`);
       }
@@ -141,6 +146,85 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
         this.addActions(actions, groupData);
       } catch (error) {
         console.error(`Error building checks: ${error.message}`);
+      }
+    }
+    
+    /**
+     * Build Checks for multiple tokens
+     * @private
+     * @param {string} actionType
+     * @param {string} groupId
+     */
+    #buildMultiTokenChecks(actionType, groupId) {
+      try {
+        // Check if we have valid actors with check data
+        const validActors = this.actors.filter(actor => 
+          actor?.system?.checks && Object.keys(actor.system.checks).length > 0
+        );
+        
+        if (validActors.length === 0) {
+          console.warn("No selected actors have valid check data");
+          return;
+        }
+        
+        // Get check IDs from the first valid actor (assuming all actors have the same checks)
+        const referenceActor = validActors[0];
+        
+        if (!referenceActor?.system?.checks) {
+          console.warn("Reference actor is missing system.checks property");
+          return;
+        }
+        
+        const checkIds = Object.keys(referenceActor.system.checks);
+        
+        if (checkIds.length === 0) {
+          console.warn("Reference actor has no checks defined");
+          return;
+        }
+        
+        const actions = checkIds.map((checkId) => {
+          try {
+            const capitalizedCheckId = checkId.charAt(0).toUpperCase() + checkId.slice(1);
+            const translationKey = `DS4.Checks${capitalizedCheckId}`;
+            const id = `multitoken-${actionType}-${checkId}`;
+            const label = coreModule.api.Utils.i18n(translationKey);
+            const name = coreModule.api.Utils.i18n(translationKey);
+            let img = "";
+            
+            // Safely access the icon if it exists
+            try {
+              img = CONFIG.DS4?.icons?.checks?.[checkId] || "";
+            } catch (iconError) {
+              console.warn(`Could not find icon for check: ${checkId}`, iconError);
+            }
+            
+            const listName = `${actionType}${coreModule.api.Utils.i18n(`DS4.Checks${checkId}`)}`;
+            const encodedValue = ["multitoken", actionType, checkId].join(this.delimiter);
+            
+            // For multiple tokens, use a descriptive label to indicate multi-roll
+            return {
+              id,
+              name,
+              img,
+              encodedValue,
+              listName,
+            };
+          } catch (innerError) {
+            console.error(`Error building action for check ${checkId}: ${innerError.message}`);
+            return null;
+          }
+        }).filter(action => action !== null); // Filter out any null actions
+        
+        if (actions.length === 0) {
+          console.warn("No valid actions were created for multiple token checks");
+          return;
+        }
+        
+        // Add a "Checks" header/group for multiple tokens
+        const groupData = { id: groupId, type: "system" };
+        this.addActions(actions, groupData);
+      } catch (error) {
+        console.error(`Error building multiple token checks: ${error.message}`);
       }
     }
 
