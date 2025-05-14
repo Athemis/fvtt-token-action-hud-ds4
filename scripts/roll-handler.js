@@ -13,24 +13,28 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
      * @param {string} encodedValue The encoded value
      */
     async handleActionClick(event, encodedValue) {
-      const [actionTypeId, actionId] = encodedValue.split("|");
+      const actionComponents = encodedValue.split("|");
+      const isMultiToken = actionComponents[0] === "multitoken";
+      const actionTypeId = isMultiToken ? actionComponents[1] : actionComponents[0];
+      const actionId = isMultiToken ? actionComponents[2] : actionComponents[1];
 
       const renderable = ["item"];
 
-      if (renderable.includes(actionTypeId) && this.isRenderItem()) {
+      if (renderable.includes(actionTypeId) && this.isRenderItem() && !isMultiToken) {
         return this.doRenderItem(this.actor, actionId);
       }
 
-      const knownCharacters = ["character"];
+      const knownCharacters = ["character", "creature"];
 
-      // If single actor is selected
-      if (this.actor) {
+      // If single actor is selected and not a multitoken action
+      if (this.actor && !isMultiToken) {
         await this.#handleAction(
           event,
           this.actor,
           this.token,
           actionTypeId,
           actionId,
+          false
         );
         return;
       }
@@ -42,7 +46,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
       // If multiple actors are selected
       for (const token of controlledTokens) {
         const actor = token.actor;
-        await this.#handleAction(event, actor, token, actionTypeId, actionId);
+        await this.#handleAction(event, actor, token, actionTypeId, actionId, isMultiToken);
       }
     }
 
@@ -78,8 +82,9 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
      * @param {object} token        The token
      * @param {string} actionTypeId The action type id
      * @param {string} actionId     The actionId
+     * @param {boolean} isMultiToken Whether this is a multitoken action
      */
-    async #handleAction(event, actor, token, actionTypeId, actionId) {
+    async #handleAction(event, actor, token, actionTypeId, actionId, isMultiToken = false) {
       try {
         switch (actionTypeId) {
           case "item":
@@ -89,7 +94,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
             this.#handleUtilityAction(token, actionId);
             break;
           case "check":
-            this.#handleCheckAction(event, actor, token, actionId);
+            this.#handleCheckAction(event, actor, token, actionId, isMultiToken);
             break;
           default:
             console.warn(`Unknown action type: ${actionTypeId}`);
@@ -118,12 +123,24 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
     /**
      * Handle check action
      * @private
-     * @param {object} event    The event
-     * @param {object} actor    The actor
-     * @param {string} check    The action id
+     * @param {object} event       The event
+     * @param {object} actor       The actor
+     * @param {object} token       The token object
+     * @param {string} checkValue  The check value to roll
+     * @param {boolean} isMultiToken Whether this is a multitoken action
      */
-    #handleCheckAction(event, actor, token, checkValue) {
+    #handleCheckAction(event, actor, token, checkValue, isMultiToken = false) {
       try {
+        if (!actor) {
+          console.warn("Cannot roll check: No actor available");
+          return;
+        }
+      
+        if (!actor.rollCheck) {
+          console.warn(`Actor ${actor.name} (${actor.id}) does not have a rollCheck method`);
+          return;
+        }
+      
         actor.rollCheck(checkValue, token.document);
       } catch (error) {
         ui.notifications.error(`Error rolling check: ${error.message}`);
