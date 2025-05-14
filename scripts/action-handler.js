@@ -218,26 +218,6 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
     }
 
     /**
-     * Build Spellcasting Spells
-     * @private
-     * @param {string} groupId
-     * @param {string} itemTypes
-     */
-    #buildSpellcastingSpells(groupId, itemTypes) {
-      this.#buildSpellsByType(groupId, itemTypes, "spellcasting", "spellcasting");
-    }
-
-    /**
-     * Build Targeted Spellcasting Spells
-     * @private
-     * @param {string} groupId
-     * @param {string} itemTypes
-     */
-    #buildTargetedSpellcastingSpells(groupId, itemTypes) {
-      this.#buildSpellsByType(groupId, itemTypes, "targetedSpellcasting", "targeted_spellcasting");
-    }
-
-    /**
      * Build Weapons
      * @private
      * @param {string} groupId
@@ -245,8 +225,8 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
      */
     #buildWeapons(groupId, itemTypes) {
       try {
-        this.#buildMeleeWeapons(groupId, itemTypes);
-        this.#buildRangedWeapons(groupId, itemTypes);
+        this.#buildWeaponsByType(groupId, itemTypes, "melee", "melee");
+        this.#buildWeaponsByType(groupId, itemTypes, "ranged", "ranged");
       } catch (error) {
         console.error(`Error building weapons: ${error.message}`);
       }
@@ -311,26 +291,6 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
       } catch (error) {
         console.error(`Error building ${attackType} weapons: ${error.message}`);
       }
-    }
-
-    /**
-     * Build Melee Weapons
-     * @private
-     * @param {string} groupId
-     * @param {string} itemTypes
-     */
-    #buildMeleeWeapons(groupId, itemTypes) {
-      this.#buildWeaponsByType(groupId, itemTypes, "melee", "melee");
-    }
-
-    /**
-     * Build Ranged Weapons
-     * @private
-     * @param {string} groupId
-     * @param {string} itemTypes
-     */
-    #buildRangedWeapons(groupId, itemTypes) {
-      this.#buildWeaponsByType(groupId, itemTypes, "ranged", "ranged");
     }
   };
 });
