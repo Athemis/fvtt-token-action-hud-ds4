@@ -204,7 +204,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
             // For multiple tokens, use a descriptive label to indicate multi-roll
             return {
               id,
-              name: `${name} (All Tokens)`,
+              name,
               img,
               encodedValue,
               listName,
