@@ -12,7 +12,7 @@
     "flags": {},
     "version": "This is auto replaced",
     "compatibility": {
-        "minimum": "12.331",
+        "minimum": "12",
         "verified": "13.342"
     },
     "esmodules": ["./scripts/token-action-hud-ds4.min.js"],
