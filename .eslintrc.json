@@ -1,0 +1,22 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "extends": "standard",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "globals": {
+    "Hooks": "readonly",
+    "ui": "readonly",
+    "canvas": "readonly",
+    "CONFIG": "readonly",
+    "game": "readonly"
+  },
+  "rules": {
+    "no-unused-vars": ["error", { "varsIgnorePattern": "label|event|encodedValue|group|isMultiToken|groupIds" }]
+  },
+  "ignorePatterns": ["**/*.min.js"]
+}
