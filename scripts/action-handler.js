@@ -18,19 +18,19 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
       try {
         // Set actor and token variables
         this.actors = !this.actor ? this.#getSelectedActors() : [this.actor];
-        
+
         // Settings
         this.displayUnequipped = Utils.getSetting("displayUnequipped");
-        
+
         if (this.actor) {
           // Handle single actor
           this.actorType = this.actor.type;
-          
+
           // Set items variable
           let items = this.actor.items;
           items = coreModule.api.Utils.sortItemsByName(items);
           this.items = items;
-          
+
           if (this.actorType === "character" || this.actorType === "creature") {
             this.#buildCharacterActions();
           }
@@ -40,7 +40,9 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
         }
       } catch (error) {
         console.error(`Error building system actions: ${error.message}`);
-        ui.notifications?.error(`Error building system actions: ${error.message}`);
+        ui.notifications?.error(
+          `Error building system actions: ${error.message}`,
+        );
       }
     }
 
@@ -55,7 +57,9 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
         this.#buildChecks("check", "checks");
       } catch (error) {
         console.error(`Error building character actions: ${error.message}`);
-        ui.notifications?.error(`Error building character actions: ${error.message}`);
+        ui.notifications?.error(
+          `Error building character actions: ${error.message}`,
+        );
       }
     }
 
@@ -66,30 +70,32 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
      */
     #buildMultipleTokenActions() {
       if (!this.actors || this.actors.length === 0) return;
-      
+
       try {
         // Create a utility group for multiple token selection
         const groupData = { id: "token", type: "system" };
-        
+
         // Add selected tokens count
         const tokenCountInfo = {
           id: "token-count-info",
           name: `${this.actors.length} tokens selected`,
           encodedValue: ["utility", "tokenCount"].join(this.delimiter),
-          cssClass: "inactive"
+          cssClass: "inactive",
         };
-        
+
         this.addActions([tokenCountInfo], groupData);
-        
+
         // Add skill checks for multiple tokens
         if (this.actors && this.actors.length > 0) {
           this.#buildMultiTokenChecks("check", "checks");
         }
       } catch (error) {
-        console.error(`Error building multiple token actions: ${error.message}`);
+        console.error(
+          `Error building multiple token actions: ${error.message}`,
+        );
       }
     }
-    
+
     /**
      * Get all selected actors
      * @private
@@ -99,10 +105,10 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
       try {
         const tokens = canvas.tokens.controlled;
         if (!tokens || tokens.length === 0) return [];
-        
+
         return tokens
-          .filter(token => token.actor)
-          .map(token => token.actor);
+          .filter((token) => token.actor)
+          .map((token) => token.actor);
       } catch (error) {
         console.error(`Error getting selected actors: ${error.message}`);
         return [];
@@ -121,34 +127,37 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
           console.warn("Actor is missing system.checks property");
           return;
         }
-        
-        const actions = Object.entries(this.actor.system.checks).map((check) => {
-          const checkId = check[0];
-          const capitalizedCheckId = checkId.charAt(0).toUpperCase() + checkId.slice(1);
-          const translationKey = `DS4.Checks${capitalizedCheckId}`;
-          const id = `${actionType}-${checkId}`;
-          const label = coreModule.api.Utils.i18n(translationKey);
-          const name = coreModule.api.Utils.i18n(translationKey);
-          const img = CONFIG.DS4.icons.checks[checkId];
-          const listName = `${actionType}${coreModule.api.Utils.i18n(`DS4.Checks${checkId}`)}`;
-          const encodedValue = [actionType, checkId].join(this.delimiter);
-          const infoText = { text: check[1].valueOf() };
-          return {
-            id,
-            name,
-            img,
-            encodedValue,
-            info1: infoText,
-            listName,
-          };
-        });
+
+        const actions = Object.entries(this.actor.system.checks).map(
+          (check) => {
+            const checkId = check[0];
+            const capitalizedCheckId =
+              checkId.charAt(0).toUpperCase() + checkId.slice(1);
+            const translationKey = `DS4.Checks${capitalizedCheckId}`;
+            const id = `${actionType}-${checkId}`;
+            const label = coreModule.api.Utils.i18n(translationKey);
+            const name = coreModule.api.Utils.i18n(translationKey);
+            const img = CONFIG.DS4.icons.checks[checkId];
+            const listName = `${actionType}${coreModule.api.Utils.i18n(`DS4.Checks${checkId}`)}`;
+            const encodedValue = [actionType, checkId].join(this.delimiter);
+            const infoText = { text: check[1].valueOf() };
+            return {
+              id,
+              name,
+              img,
+              encodedValue,
+              info1: infoText,
+              listName,
+            };
+          },
+        );
         const groupData = { id: groupId, type: "system" };
         this.addActions(actions, groupData);
       } catch (error) {
         console.error(`Error building checks: ${error.message}`);
       }
     }
-    
+
     /**
      * Build Checks for multiple tokens
      * @private
@@ -158,68 +167,82 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
     #buildMultiTokenChecks(actionType, groupId) {
       try {
         // Check if we have valid actors with check data
-        const validActors = this.actors.filter(actor => 
-          actor?.system?.checks && Object.keys(actor.system.checks).length > 0
+        const validActors = this.actors.filter(
+          (actor) =>
+            actor?.system?.checks &&
+            Object.keys(actor.system.checks).length > 0,
         );
-        
+
         if (validActors.length === 0) {
           console.warn("No selected actors have valid check data");
           return;
         }
-        
+
         // Get check IDs from the first valid actor (assuming all actors have the same checks)
         const referenceActor = validActors[0];
-        
+
         if (!referenceActor?.system?.checks) {
           console.warn("Reference actor is missing system.checks property");
           return;
         }
-        
+
         const checkIds = Object.keys(referenceActor.system.checks);
-        
+
         if (checkIds.length === 0) {
           console.warn("Reference actor has no checks defined");
           return;
         }
-        
-        const actions = checkIds.map((checkId) => {
-          try {
-            const capitalizedCheckId = checkId.charAt(0).toUpperCase() + checkId.slice(1);
-            const translationKey = `DS4.Checks${capitalizedCheckId}`;
-            const id = `multitoken-${actionType}-${checkId}`;
-            const label = coreModule.api.Utils.i18n(translationKey);
-            const name = coreModule.api.Utils.i18n(translationKey);
-            let img = "";
-            
-            // Safely access the icon if it exists
+
+        const actions = checkIds
+          .map((checkId) => {
             try {
-              img = CONFIG.DS4?.icons?.checks?.[checkId] || "";
-            } catch (iconError) {
-              console.warn(`Could not find icon for check: ${checkId}`, iconError);
+              const capitalizedCheckId =
+                checkId.charAt(0).toUpperCase() + checkId.slice(1);
+              const translationKey = `DS4.Checks${capitalizedCheckId}`;
+              const id = `multitoken-${actionType}-${checkId}`;
+              const label = coreModule.api.Utils.i18n(translationKey);
+              const name = coreModule.api.Utils.i18n(translationKey);
+              let img = "";
+
+              // Safely access the icon if it exists
+              try {
+                img = CONFIG.DS4?.icons?.checks?.[checkId] || "";
+              } catch (iconError) {
+                console.warn(
+                  `Could not find icon for check: ${checkId}`,
+                  iconError,
+                );
+              }
+
+              const listName = `${actionType}${coreModule.api.Utils.i18n(`DS4.Checks${checkId}`)}`;
+              const encodedValue = ["multitoken", actionType, checkId].join(
+                this.delimiter,
+              );
+
+              // For multiple tokens, use a descriptive label to indicate multi-roll
+              return {
+                id,
+                name,
+                img,
+                encodedValue,
+                listName,
+              };
+            } catch (innerError) {
+              console.error(
+                `Error building action for check ${checkId}: ${innerError.message}`,
+              );
+              return null;
             }
-            
-            const listName = `${actionType}${coreModule.api.Utils.i18n(`DS4.Checks${checkId}`)}`;
-            const encodedValue = ["multitoken", actionType, checkId].join(this.delimiter);
-            
-            // For multiple tokens, use a descriptive label to indicate multi-roll
-            return {
-              id,
-              name,
-              img,
-              encodedValue,
-              listName,
-            };
-          } catch (innerError) {
-            console.error(`Error building action for check ${checkId}: ${innerError.message}`);
-            return null;
-          }
-        }).filter(action => action !== null); // Filter out any null actions
-        
+          })
+          .filter((action) => action !== null); // Filter out any null actions
+
         if (actions.length === 0) {
-          console.warn("No valid actions were created for multiple token checks");
+          console.warn(
+            "No valid actions were created for multiple token checks",
+          );
           return;
         }
-        
+
         // Add a "Checks" header/group for multiple tokens
         const groupData = { id: groupId, type: "system" };
         this.addActions(actions, groupData);
@@ -236,8 +259,18 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
      */
     #buildSpells(groupId, itemTypes) {
       try {
-        this.#buildSpellsByType(groupId, itemTypes, "spellcasting", "spellcasting");
-        this.#buildSpellsByType(groupId, itemTypes, "targetedSpellcasting", "targeted_spellcasting");
+        this.#buildSpellsByType(
+          groupId,
+          itemTypes,
+          "spellcasting",
+          "spellcasting",
+        );
+        this.#buildSpellsByType(
+          groupId,
+          itemTypes,
+          "targetedSpellcasting",
+          "targeted_spellcasting",
+        );
       } catch (error) {
         console.error(`Error building spells: ${error.message}`);
       }
@@ -257,12 +290,12 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
           console.warn(`Actor is missing combatValues.${spellType}`);
           return;
         }
-        
+
         if (!this.actor.items) {
           console.warn("Actor has no items");
           return;
         }
-        
+
         const actionType = groupId;
         const actions = Object.entries(
           this.actor.items.filter(
@@ -279,8 +312,26 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
           const listName = `${actionType}${label}`;
           const encodedValue = [actionType, itemId].join(this.delimiter);
           const img = item[1].img;
+          // Get base spell value
+          let spellValue =
+            this.actor.system.combatValues[spellType].total.valueOf();
+
+          // Add numerical modifier if it exists on the item
+          try {
+            const numericalMod = item[1].system.spellModifier?.numerical;
+            if (numericalMod !== undefined) {
+              const numericValue = Number(numericalMod);
+              if (isNaN(numericValue)) {
+                throw new Error(`Item spell modifier "${numericalMod}" cannot be converted to a number`);
+              }
+              spellValue += numericValue;
+            }
+          } catch (error) {
+            console.error(`Error processing spell modifier for ${item[1].name}: ${error.message}`);
+          }
+
           const infoText = {
-            text: this.actor.system.combatValues[spellType].total.valueOf(),
+            text: spellValue,
             class: "custominfo",
           };
           const cssClass = "";
@@ -332,13 +383,14 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
         }
 
         const actionType = groupId;
-        const attackValue = this.actor.system.combatValues[`${attackType}Attack`].total;
-        
+        const attackValue =
+          this.actor.system.combatValues[`${attackType}Attack`].total;
+
         if (!this.actor.items) {
           console.warn("Actor has no items");
           return;
         }
-        
+
         const actions = Object.entries(
           this.actor.items.filter(
             (el) =>
