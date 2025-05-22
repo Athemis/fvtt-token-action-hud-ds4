@@ -149,7 +149,8 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
               listName
             }
           }
-        )
+        // Sort actions alphabetically by listName for easier navigation
+        ).sort((a, b) => a.listName.localeCompare(b.listName))
         const groupData = { id: groupId, type: 'system' }
         this.addActions(actions, groupData)
       } catch (error) {
@@ -346,7 +347,8 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
             cssClass,
             listName
           }
-        })
+        // Sort actions alphabetically by listName for easier navigation
+        }).sort((a, b) => a.listName.localeCompare(b.listName))
         const groupData = { id: groupDataId, type: 'system' }
         this.addActions(actions, groupData)
       } catch (error) {
@@ -423,7 +425,8 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
             cssClass,
             listName
           }
-        })
+        // Sort actions alphabetically by listName for easier navigation
+        }).sort((a, b) => a.listName.localeCompare(b.listName))
         const groupData = { id: groupDataId, type: 'system' }
         this.addActions(actions, groupData)
       } catch (error) {
