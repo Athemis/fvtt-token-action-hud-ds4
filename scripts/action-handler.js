@@ -343,7 +343,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 
             // Add equipped indicator when displaying both equipped and unequipped items
             if (this.displayUnequipped && item[1].system.equipped) {
-              infoText.text = `${infoText.text}\nE`;
+              infoText.text = `${infoText.text}\n✔`;
             }
             const cssClass = "";
             return {
@@ -354,10 +354,20 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
               img,
               cssClass,
               listName,
+              equipped: item[1].system.equipped || false, // Track equipped status for sorting
             };
-            // Sort actions alphabetically by listName for easier navigation
+            // Sort actions: first equipped items alphabetically, then unequipped alphabetically
           })
-          .sort((a, b) => a.listName.localeCompare(b.listName));
+          .sort((a, b) => {
+            // If displaying both equipped and unequipped items
+            if (this.displayUnequipped) {
+              // If one is equipped and the other isn't, equipped comes first
+              if (a.equipped && !b.equipped) return -1;
+              if (!a.equipped && b.equipped) return 1;
+            }
+            // Otherwise sort alphabetically by listName
+            return a.listName.localeCompare(b.listName);
+          });
         const groupData = { id: groupDataId, type: "system" };
         this.addActions(actions, groupData);
       } catch (error) {
@@ -428,7 +438,7 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
 
             // Add equipped indicator when displaying both equipped and unequipped items
             if (this.displayUnequipped && item[1].system.equipped) {
-              infoText.text = `${infoText.text}\nE`;
+              infoText.text = `${infoText.text}\n✔`;
             }
             const cssClass = "";
             return {
@@ -439,10 +449,20 @@ Hooks.once("tokenActionHudCoreApiReady", async (coreModule) => {
               img,
               cssClass,
               listName,
+              equipped: item[1].system.equipped || false, // Track equipped status for sorting
             };
-            // Sort actions alphabetically by listName for easier navigation
+            // Sort actions: first equipped items alphabetically, then unequipped alphabetically
           })
-          .sort((a, b) => a.listName.localeCompare(b.listName));
+          .sort((a, b) => {
+            // If displaying both equipped and unequipped items
+            if (this.displayUnequipped) {
+              // If one is equipped and the other isn't, equipped comes first
+              if (a.equipped && !b.equipped) return -1;
+              if (!a.equipped && b.equipped) return 1;
+            }
+            // Otherwise sort alphabetically by listName
+            return a.listName.localeCompare(b.listName);
+          });
         const groupData = { id: groupDataId, type: "system" };
         this.addActions(actions, groupData);
       } catch (error) {
