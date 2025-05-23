@@ -150,9 +150,9 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
                 listName
               }
             }
-            // Sort actions alphabetically by listName for easier navigation
+            // Sort actions alphabetically by name for easier navigation
           )
-          .sort((a, b) => a.listName.localeCompare(b.listName))
+          .sort((a, b) => a.name.localeCompare(b.name))
         const groupData = { id: groupId, type: 'system' }
         this.addActions(actions, groupData)
       } catch (error) {
@@ -460,8 +460,8 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
               if (a.equipped && !b.equipped) return -1
               if (!a.equipped && b.equipped) return 1
             }
-            // Otherwise sort alphabetically by listName
-            return a.listName.localeCompare(b.listName)
+            // Otherwise sort alphabetically by name
+            return a.name.localeCompare(b.name)
           })
         const groupData = { id: groupDataId, type: 'system' }
         this.addActions(actions, groupData)
