@@ -13,7 +13,7 @@
   "version": "This is auto replaced",
   "compatibility": {
     "minimum": "12",
-    "verified": "13.344"
+    "verified": "13.346"
   },
   "esmodules": ["./scripts/token-action-hud-ds4.min.js"],
   "scripts": [],
@@ -37,7 +37,7 @@
         "id": "ds4",
         "compatibility": {
           "minimum": "2.0.0",
-          "maximum": "2.0.99",
+          "maximum": "3.0.99",
           "verified": "2.0.5"
         }
       }
