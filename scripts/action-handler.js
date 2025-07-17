@@ -106,9 +106,18 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
         const tokens = canvas.tokens.controlled
         if (!tokens || tokens.length === 0) return []
 
-        return tokens
+        const uniqueActors = []
+        const actorIds = new Set()
+        tokens
           .filter((token) => token.actor)
-          .map((token) => token.actor)
+          .forEach((token) => {
+            const actor = token.actor
+            if (!actorIds.has(actor.id)) {
+              actorIds.add(actor.id)
+              uniqueActors.push(actor)
+            }
+          })
+        return uniqueActors
       } catch (error) {
         console.error(`Error getting selected actors: ${error.message}`)
         return []
@@ -407,7 +416,7 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
 
         const actionType = groupId
         const attackValue =
-          this.actor.system.combatValues[`${attackType}Attack`].total
+          this.actor.system.combatValues[`${attackType}Attack`].total.valueOf()
 
         if (!this.actor.items) {
           console.warn('Actor has no items')
@@ -430,7 +439,8 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
             const listName = `${actionType}${label}`
             const encodedValue = [actionType, itemId].join(this.delimiter)
             const img = item[1].img
-            const weaponBonus = item[1].system.weaponBonus || 0
+            const weaponBonusRaw = item[1].system.weaponBonus || 0
+            const weaponBonus = Number(weaponBonusRaw) || 0
             const infoText = {
               text: attackValue + weaponBonus,
               class: 'custominfo'
