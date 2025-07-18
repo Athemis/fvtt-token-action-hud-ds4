@@ -33,7 +33,7 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
             { ...groups.spellcasting, nestId: 'spells_spellcasting' },
             {
               ...groups.targeted_spellcasting,
-              nestId: 'spells_tspellcasting'
+              nestId: 'spells_targeted_spellcasting'
             }
           ]
         },
