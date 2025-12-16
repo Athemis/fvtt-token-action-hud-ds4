@@ -11,7 +11,7 @@
     "@rollup/plugin-multi-entry": "^7.1.0",
     "@rollup/plugin-terser": "^0.4.4",
     "eslint-plugin-jsdoc": "^61.5.0",
-    "rollup": "^4.53.3",
+    "rollup": "^4.53.5",
     "standard": "^17.1.2"
   },
   "type": "module"
