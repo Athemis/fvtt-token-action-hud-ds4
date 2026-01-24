@@ -21,7 +21,7 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
       const renderable = ['item']
 
       if (renderable.includes(actionTypeId) && this.isRenderItem() && !isMultiToken) {
-        return this.doRenderItem(this.actor, actionId)
+        return this.renderItem(this.actor, actionId)
       }
 
       const knownCharacters = ['character', 'creature']
