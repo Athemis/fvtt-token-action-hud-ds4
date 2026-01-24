@@ -141,7 +141,12 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
           return
         }
 
-        actor.rollCheck(checkValue, token.document)
+        if (token?.document) {
+          actor.rollCheck(checkValue, { speaker: { token: token.document } })
+        } else {
+          console.warn(`Token document missing for check roll: ${checkValue}`)
+          actor.rollCheck(checkValue)
+        }
       } catch (error) {
         ui.notifications.error(`Error rolling check: ${error.message}`)
       }
