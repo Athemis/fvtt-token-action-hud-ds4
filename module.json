@@ -47,8 +47,8 @@
                 "id": "token-action-hud-core",
                 "type": "module",
                 "compatibility": {
-                    "minimum": "2.0.11",
-                    "verified": "2.0.12"
+                    "minimum": "2.1",
+                    "verified": "2.1.1"
                 }
             }
         ],
