@@ -1,6 +1,9 @@
 {
     "tokenActionHud": {
         "ds4": {
+            "consumeUnavailable": "Gegenstände über Token Action HUD zu verbrauchen benötigt DS4 4.x mit game.ds4.macros.consumeItem.",
+            "consumables": "Verbrauchbares",
+            "genericCheck": "Allgemeine Probe",
             "settings": {
                 "displayUnequipped": {
                     "hint": "Sollen nicht ausgerüstete Gegenstände im HUD angezeigt werden?",

@@ -50,6 +50,16 @@ export const GROUP = {
     name: 'DS4.Checks',
     type: 'system'
   },
+  generic_check: {
+    id: 'generic_check',
+    name: 'tokenActionHud.ds4.genericCheck',
+    type: 'system'
+  },
+  consumables: {
+    id: 'consumables',
+    name: 'tokenActionHud.ds4.consumables',
+    type: 'system'
+  },
   token: {
     id: 'token',
     name: 'tokenActionHud.token',
