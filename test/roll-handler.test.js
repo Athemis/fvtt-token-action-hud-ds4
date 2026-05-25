@@ -43,6 +43,20 @@ test('item actions roll with token speaker data', async () => {
   assert.deepEqual(rollOptions, { speaker: { token: token.document } })
 })
 
+test('item actions roll without options when no token document is available', async () => {
+  let rollArguments
+  const actor = {
+    items: new Map([['item-id', { roll: async (...args) => { rollArguments = args } }]])
+  }
+  const handler = new RollHandler()
+  handler.actor = actor
+  handler.token = {}
+
+  await handler.handleActionClick({}, 'item|item-id')
+
+  assert.deepEqual(rollArguments, [])
+})
+
 test('item actions warn when item is unavailable', async () => {
   let warning
   let error
@@ -94,6 +108,20 @@ test('check actions roll with token speaker data', async () => {
 
   assert.equal(rollValue, 'body')
   assert.deepEqual(rollOptions, { speaker: { token: token.document } })
+})
+
+test('check actions roll without options when no token document is available', async () => {
+  let rollArguments
+  const actor = {
+    rollCheck: async (...args) => { rollArguments = args }
+  }
+  const handler = new RollHandler()
+  handler.actor = actor
+  handler.token = {}
+
+  await handler.handleActionClick({}, 'check|body')
+
+  assert.deepEqual(rollArguments, ['body'])
 })
 
 test('multitoken check actions roll each controlled actor with its token speaker data', async () => {
@@ -208,4 +236,18 @@ test('generic check actions roll actor generic check with token speaker data', a
   await handler.handleActionClick({}, 'genericCheck|')
 
   assert.deepEqual(rollOptions, { speaker: { token: token.document } })
+})
+
+test('generic check actions roll without options when no token document is available', async () => {
+  let rollArguments
+  const actor = {
+    rollGenericCheck: async (...args) => { rollArguments = args }
+  }
+  const handler = new RollHandler()
+  handler.actor = actor
+  handler.token = {}
+
+  await handler.handleActionClick({}, 'genericCheck|')
+
+  assert.deepEqual(rollArguments, [])
 })
