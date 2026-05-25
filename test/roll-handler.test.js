@@ -43,6 +43,21 @@ test('item actions roll with token speaker data', async () => {
   assert.deepEqual(rollOptions, { speaker: { token: token.document } })
 })
 
+test('item actions warn when item is unavailable', async () => {
+  let warning
+  let error
+  globalThis.ui.notifications.warn = (message) => { warning = message }
+  globalThis.ui.notifications.error = (message) => { error = message }
+  const handler = new RollHandler()
+  handler.actor = { items: new Map() }
+  handler.token = { document: { id: 'token-document' } }
+
+  await handler.handleActionClick({}, 'item|missing-item')
+
+  assert.equal(warning, 'Cannot roll item: missing-item is unavailable')
+  assert.equal(error, undefined)
+})
+
 test('rendered item actions use core renderItem', async () => {
   const actor = { items: new Map() }
   const handler = new RollHandler()
@@ -161,13 +176,18 @@ test('multitoken generic check actions are ignored because generic checks are si
 test('consume actions warn when DS4 consume item macro is unavailable', async () => {
   let warning
   globalThis.ui.notifications.warn = (message) => { warning = message }
+  globalThis.game = {
+    i18n: {
+      localize: (key) => `${key}.localized`
+    }
+  }
   const handler = new RollHandler()
   handler.actor = { type: 'character' }
   handler.token = { document: { id: 'token-document' } }
 
   await handler.handleActionClick({}, 'consume|item-id')
 
-  assert.equal(warning, 'tokenActionHud.ds4.consumeUnavailable')
+  assert.equal(warning, 'tokenActionHud.ds4.consumeUnavailable.localized')
 })
 
 test('generic check actions roll actor generic check with token speaker data', async () => {

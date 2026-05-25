@@ -15,8 +15,8 @@ test('module metadata targets Foundry 14 and DS4 4 beta compatibility', () => {
     {
       id: 'ds4',
       compatibility: {
-        minimum: '4.0.0-beta.4',
-        verified: '4.0.0-beta.4'
+        minimum: '4.0.0-beta.5',
+        verified: '4.0.0-beta.5'
       }
     }
   ])

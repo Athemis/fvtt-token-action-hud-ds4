@@ -216,8 +216,9 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
           const spentUses = Number(item.system?.uses?.spent)
 
           if (Number.isFinite(maxUses) && Number.isFinite(spentUses)) {
+            const remainingUses = Math.max(0, maxUses - spentUses)
             action.info2 = {
-              text: maxUses - spentUses,
+              text: remainingUses,
               title: 'DS4.RemainingUsesTooltip'
             }
           }

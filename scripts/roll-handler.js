@@ -122,6 +122,11 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
      */
     async #handleItemAction (actor, token, actionId) {
       const item = actor.items.get(actionId)
+      if (!item?.roll) {
+        ui.notifications.warn(`Cannot roll item: ${actionId} is unavailable`)
+        return
+      }
+
       try {
         await item.roll({ speaker: { token: token?.document } })
       } catch (error) {
@@ -164,7 +169,7 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
     async #handleConsumeAction (actor, actionId) {
       try {
         if (!game.ds4?.macros?.consumeItem) {
-          ui.notifications.warn('tokenActionHud.ds4.consumeUnavailable')
+          ui.notifications.warn(game.i18n.localize('tokenActionHud.ds4.consumeUnavailable'))
           return
         }
 

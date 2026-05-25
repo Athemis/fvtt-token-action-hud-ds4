@@ -74,6 +74,7 @@ test('single actors include generic check and sorted consumable actions', async 
     items: [
       consumableItem({ id: 'z-potion', name: 'Z Potion', quantity: 2, max: 5, spent: 3 }),
       consumableItem({ id: 'a-ration', name: 'A Ration', quantity: '1' }),
+      consumableItem({ id: 'overused', name: 'Overused Tonic', quantity: 1, max: 2, spent: 5 }),
       consumableItem({ id: 'empty', name: 'Empty Flask', quantity: 0 }),
       consumableItem({ id: 'rollable', name: 'Throwable Flask', quantity: 1, rollable: true })
     ]
@@ -96,6 +97,14 @@ test('single actors include generic check and sorted consumable actions', async 
       encodedValue: 'consume|a-ration',
       img: 'icons/food.webp',
       info1: { text: 1, title: 'DS4.Quantity' }
+    },
+    {
+      id: 'consume-overused',
+      name: 'Overused Tonic',
+      encodedValue: 'consume|overused',
+      img: 'icons/food.webp',
+      info1: { text: 1, title: 'DS4.Quantity' },
+      info2: { text: 0, title: 'DS4.RemainingUsesTooltip' }
     },
     {
       id: 'consume-z-potion',
