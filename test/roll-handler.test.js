@@ -48,13 +48,18 @@ test('item actions warn when item is unavailable', async () => {
   let error
   globalThis.ui.notifications.warn = (message) => { warning = message }
   globalThis.ui.notifications.error = (message) => { error = message }
+  globalThis.game = {
+    i18n: {
+      format: (key, data) => `${key}:${data.itemId}`
+    }
+  }
   const handler = new RollHandler()
   handler.actor = { items: new Map() }
   handler.token = { document: { id: 'token-document' } }
 
   await handler.handleActionClick({}, 'item|missing-item')
 
-  assert.equal(warning, 'Cannot roll item: missing-item is unavailable')
+  assert.equal(warning, 'tokenActionHud.ds4.itemUnavailable:missing-item')
   assert.equal(error, undefined)
 })
 

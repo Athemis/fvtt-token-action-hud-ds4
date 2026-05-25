@@ -4,6 +4,7 @@
             "consumeUnavailable": "Consuming items from Token Action HUD requires DS4 4.x with game.ds4.macros.consumeItem.",
             "consumables": "Consumables",
             "genericCheck": "Generic Check",
+            "itemUnavailable": "Cannot roll item: {itemId} is unavailable.",
             "settings": {
                 "displayUnequipped": {
                     "hint": "Choose whether to display unequipped items on the HUD",

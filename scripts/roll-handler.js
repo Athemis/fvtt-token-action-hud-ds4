@@ -123,7 +123,7 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
     async #handleItemAction (actor, token, actionId) {
       const item = actor.items.get(actionId)
       if (!item?.roll) {
-        ui.notifications.warn(`Cannot roll item: ${actionId} is unavailable`)
+        ui.notifications.warn(game.i18n.format('tokenActionHud.ds4.itemUnavailable', { itemId: actionId }))
         return
       }
 
