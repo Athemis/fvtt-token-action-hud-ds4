@@ -73,7 +73,7 @@ test('single actors include generic check and sorted consumable actions', async 
     },
     items: [
       consumableItem({ id: 'z-potion', name: 'Z Potion', quantity: 2, max: 5, spent: 3 }),
-      consumableItem({ id: 'a-ration', name: 'A Ration', quantity: 1 }),
+      consumableItem({ id: 'a-ration', name: 'A Ration', quantity: '1' }),
       consumableItem({ id: 'empty', name: 'Empty Flask', quantity: 0 }),
       consumableItem({ id: 'rollable', name: 'Throwable Flask', quantity: 1, rollable: true })
     ]

@@ -208,7 +208,7 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
             encodedValue: ['consume', item.id].join(this.delimiter),
             img: item.img,
             info1: {
-              text: item.system.quantity,
+              text: Number(item.system.quantity),
               title: 'DS4.Quantity'
             }
           }

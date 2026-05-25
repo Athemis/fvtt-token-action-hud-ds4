@@ -19,10 +19,13 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
       const actionId = isMultiToken ? actionComponents[2] : actionComponents[1]
 
       const renderable = ['item']
+      const singleActorOnly = ['consume', 'genericCheck']
 
       if (renderable.includes(actionTypeId) && this.isRenderItem() && !isMultiToken) {
         return this.renderItem(this.actor, actionId)
       }
+
+      if (isMultiToken && singleActorOnly.includes(actionTypeId)) return
 
       const knownCharacters = ['character', 'creature']
 
@@ -91,7 +94,7 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
             await this.#handleItemAction(actor, token, actionId)
             break
           case 'consume':
-            await this.#handleConsumeAction(actionId)
+            await this.#handleConsumeAction(actor, actionId)
             break
           case 'genericCheck':
             await this.#handleGenericCheckAction(actor, token)
@@ -155,16 +158,17 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
     /**
      * Handle consume action
      * @private
+     * @param {object} actor    The actor
      * @param {string} actionId The action id
      */
-    async #handleConsumeAction (actionId) {
+    async #handleConsumeAction (actor, actionId) {
       try {
         if (!game.ds4?.macros?.consumeItem) {
           ui.notifications.warn('tokenActionHud.ds4.consumeUnavailable')
           return
         }
 
-        await game.ds4.macros.consumeItem(actionId)
+        await game.ds4.macros.consumeItem(actionId, actor)
       } catch (error) {
         ui.notifications.error(`Error consuming item: ${error.message}`)
       }

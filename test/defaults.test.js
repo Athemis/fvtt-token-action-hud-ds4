@@ -46,7 +46,7 @@ test('default layout includes generic checks, consumables, and targeted spellcas
   const checks = DEFAULTS.layout.find((entry) => entry.nestId === 'checks')
   const items = DEFAULTS.layout.find((entry) => entry.nestId === 'items')
 
-  assert.equal(spells.groups[1].nestId, 'spells_targeted_spellcasting')
+  assert.equal(spells.groups[1].nestId, 'spells_tspellcasting')
   assert.deepEqual(checks.groups.map((group) => group.nestId), [
     'checks_checks',
     'checks_generic_check'

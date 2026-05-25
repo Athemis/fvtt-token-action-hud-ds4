@@ -9,6 +9,11 @@ globalThis.Hooks = {
       api: {
         RollHandler: class {
           isRenderItem () { return false }
+
+          async renderItem (actor, itemId) {
+            this.renderedActor = actor
+            this.renderedItemId = itemId
+          }
         }
       }
     })
@@ -39,22 +44,16 @@ test('item actions roll with token speaker data', async () => {
 })
 
 test('rendered item actions use core renderItem', async () => {
-  let renderedActor
-  let renderedItemId
   const actor = { items: new Map() }
   const handler = new RollHandler()
   handler.actor = actor
   handler.token = { document: { id: 'token-document' } }
   handler.isRenderItem = () => true
-  handler.renderItem = async (actor, itemId) => {
-    renderedActor = actor
-    renderedItemId = itemId
-  }
 
   await handler.handleActionClick({}, 'item|item-id')
 
-  assert.equal(renderedActor, actor)
-  assert.equal(renderedItemId, 'item-id')
+  assert.equal(handler.renderedActor, actor)
+  assert.equal(handler.renderedItemId, 'item-id')
 })
 
 test('check actions roll with token speaker data', async () => {
@@ -101,22 +100,62 @@ test('multitoken check actions roll each controlled actor with its token speaker
   ])
 })
 
-test('consume actions call DS4 consume item macro', async () => {
+test('consume actions call DS4 consume item macro with actor context', async () => {
   let consumedItemId
+  let consumedActor
   globalThis.game = {
     ds4: {
       macros: {
-        consumeItem: async (itemId) => { consumedItemId = itemId }
+        consumeItem: async (itemId, actor) => {
+          consumedItemId = itemId
+          consumedActor = actor
+        }
       }
     }
   }
+  const actor = { type: 'character' }
   const handler = new RollHandler()
-  handler.actor = { type: 'character' }
+  handler.actor = actor
   handler.token = { document: { id: 'token-document' } }
 
   await handler.handleActionClick({}, 'consume|item-id')
 
   assert.equal(consumedItemId, 'item-id')
+  assert.equal(consumedActor, actor)
+})
+
+test('multitoken consume actions are ignored because consumables are single actor actions', async () => {
+  let consumeCalls = 0
+  globalThis.game = {
+    ds4: {
+      macros: {
+        consumeItem: async () => { consumeCalls += 1 }
+      }
+    }
+  }
+  globalThis.canvas.tokens.controlled = [{ id: 'token-id', actor: { type: 'character' } }]
+  const handler = new RollHandler()
+
+  await handler.handleActionClick({}, 'multitoken|consume|item-id')
+
+  assert.equal(consumeCalls, 0)
+})
+
+test('multitoken generic check actions are ignored because generic checks are single actor actions', async () => {
+  let rollCalls = 0
+  globalThis.canvas.tokens.controlled = [{
+    id: 'token-id',
+    document: { id: 'token-document' },
+    actor: {
+      type: 'character',
+      rollGenericCheck: async () => { rollCalls += 1 }
+    }
+  }]
+  const handler = new RollHandler()
+
+  await handler.handleActionClick({}, 'multitoken|genericCheck|generic')
+
+  assert.equal(rollCalls, 0)
 })
 
 test('consume actions warn when DS4 consume item macro is unavailable', async () => {
