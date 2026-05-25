@@ -128,7 +128,12 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
       }
 
       try {
-        await item.roll({ speaker: { token: token?.document } })
+        if (token?.document) {
+          await item.roll({ speaker: { token: token.document } })
+          return
+        }
+
+        await item.roll()
       } catch (error) {
         ui.notifications.error(`Error rolling item: ${error.message}`)
       }
@@ -154,7 +159,12 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
           return
         }
 
-        await actor.rollCheck(checkValue, { speaker: { token: token?.document } })
+        if (token?.document) {
+          await actor.rollCheck(checkValue, { speaker: { token: token.document } })
+          return
+        }
+
+        await actor.rollCheck(checkValue)
       } catch (error) {
         ui.notifications.error(`Error rolling check: ${error.message}`)
       }
@@ -189,7 +199,12 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
       try {
         if (!actor?.rollGenericCheck) return
 
-        await actor.rollGenericCheck({ speaker: { token: token?.document } })
+        if (token?.document) {
+          await actor.rollGenericCheck({ speaker: { token: token.document } })
+          return
+        }
+
+        await actor.rollGenericCheck()
       } catch (error) {
         ui.notifications.error(`Error rolling generic check: ${error.message}`)
       }
