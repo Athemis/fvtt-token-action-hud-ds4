@@ -55,6 +55,8 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
         this.#buildWeapons('item', ['weapon'])
         this.#buildSpells('item', ['spell'])
         this.#buildChecks('check', 'checks')
+        this.#buildGenericCheck()
+        this.#buildConsumables()
       } catch (error) {
         console.error(`Error building character actions: ${error.message}`)
         ui.notifications?.error(
@@ -167,6 +169,66 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
       } catch (error) {
         console.error(`Error building checks: ${error.message}`)
       }
+    }
+
+    /**
+     * Build Generic Check
+     * @private
+     */
+    #buildGenericCheck () {
+      if (!this.actor?.rollGenericCheck) return
+
+      const action = {
+        id: 'generic-check',
+        name: coreModule.api.Utils.i18n('tokenActionHud.ds4.genericCheck'),
+        encodedValue: ['genericCheck', 'generic'].join(this.delimiter),
+        img: 'icons/svg/d20.svg'
+      }
+      const groupData = { id: 'generic_check', type: 'system' }
+      this.addActions([action], groupData)
+    }
+
+    /**
+     * Build Consumables
+     * @private
+     */
+    #buildConsumables () {
+      if (!this.actor?.items) return
+
+      const actions = this.actor.items
+        .filter((item) => (
+          item.system?.usable === true &&
+          Number(item.system?.quantity) > 0 &&
+          item.system?.rollable !== true
+        ))
+        .map((item) => {
+          const action = {
+            id: `consume-${item.id}`,
+            name: item.name,
+            encodedValue: ['consume', item.id].join(this.delimiter),
+            img: item.img,
+            info1: {
+              text: Number(item.system.quantity),
+              title: 'DS4.Quantity'
+            }
+          }
+          const maxUses = Number(item.system?.uses?.max)
+          const spentUses = Number(item.system?.uses?.spent)
+
+          if (Number.isFinite(maxUses) && Number.isFinite(spentUses)) {
+            const remainingUses = Math.max(0, maxUses - spentUses)
+            action.info2 = {
+              text: remainingUses,
+              title: 'DS4.RemainingUsesTooltip'
+            }
+          }
+
+          return action
+        })
+        .sort((a, b) => a.name.localeCompare(b.name))
+
+      const groupData = { id: 'consumables', type: 'system' }
+      this.addActions(actions, groupData)
     }
 
     /**
@@ -363,6 +425,7 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
               img,
               cssClass,
               listName,
+              system: { rollable: item[1].system.rollable === true },
               equipped: item[1].system.equipped || false // Track equipped status for sorting
             }
             // Sort actions: first equipped items alphabetically, then unequipped alphabetically
@@ -427,7 +490,8 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
           this.actor.items.filter(
             (el) =>
               itemTypes.includes(el.type) &&
-              el.system.attackType === attackType &&
+              (el.system.attackType === attackType ||
+                el.system.attackType === 'meleeRanged') &&
               (this.displayUnequipped || el.system.equipped === true)
           )
         )
@@ -459,6 +523,7 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
               img,
               cssClass,
               listName,
+              system: { rollable: item[1].system.rollable === true },
               equipped: item[1].system.equipped || false // Track equipped status for sorting
             }
             // Sort actions: first equipped items alphabetically, then unequipped alphabetically

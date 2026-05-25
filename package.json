@@ -2,6 +2,7 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -wcm",
+    "test": "node --test",
     "lint": "standard --global Hooks --global ui --global canvas --global CONFIG --global game",
     "lint:fix": "standard --global Hooks --global ui --global canvas --global CONFIG --global game --fix"
   },

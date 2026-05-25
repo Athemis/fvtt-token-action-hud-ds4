@@ -41,7 +41,16 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
           nestId: 'checks',
           id: 'checks',
           name: coreModule.api.Utils.i18n('DS4.Checks'),
-          groups: [{ ...groups.checks, nestId: 'checks_checks' }]
+          groups: [
+            { ...groups.checks, nestId: 'checks_checks' },
+            { ...groups.generic_check, nestId: 'checks_generic_check' }
+          ]
+        },
+        {
+          nestId: 'items',
+          id: 'items',
+          name: coreModule.api.Utils.i18n('DS4.ItemTypeEquipmentPlural'),
+          groups: [{ ...groups.consumables, nestId: 'items_consumables' }]
         },
         {
           nestId: 'utility',

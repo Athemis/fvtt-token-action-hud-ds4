@@ -19,10 +19,13 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
       const actionId = isMultiToken ? actionComponents[2] : actionComponents[1]
 
       const renderable = ['item']
+      const singleActorOnly = ['consume', 'genericCheck']
 
       if (renderable.includes(actionTypeId) && this.isRenderItem() && !isMultiToken) {
-        return this.doRenderItem(this.actor, actionId)
+        return this.renderItem(this.actor, actionId)
       }
+
+      if (isMultiToken && singleActorOnly.includes(actionTypeId)) return
 
       const knownCharacters = ['character', 'creature']
 
@@ -88,13 +91,19 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
       try {
         switch (actionTypeId) {
           case 'item':
-            this.#handleItemAction(event, actor, actionId)
+            await this.#handleItemAction(actor, token, actionId)
+            break
+          case 'consume':
+            await this.#handleConsumeAction(actor, actionId)
+            break
+          case 'genericCheck':
+            await this.#handleGenericCheckAction(actor, token)
             break
           case 'utility':
-            this.#handleUtilityAction(token, actionId)
+            await this.#handleUtilityAction(token, actionId)
             break
           case 'check':
-            this.#handleCheckAction(event, actor, token, actionId, isMultiToken)
+            await this.#handleCheckAction(actor, token, actionId, isMultiToken)
             break
           default:
             console.warn(`Unknown action type: ${actionTypeId}`)
@@ -107,14 +116,19 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
     /**
      * Handle item action
      * @private
-     * @param {object} event    The event
      * @param {object} actor    The actor
+     * @param {object} token    The token
      * @param {string} actionId The action id
      */
-    #handleItemAction (event, actor, actionId) {
+    async #handleItemAction (actor, token, actionId) {
       const item = actor.items.get(actionId)
+      if (!item?.roll) {
+        ui.notifications.warn(game.i18n.format('tokenActionHud.ds4.itemUnavailable', { itemId: actionId }))
+        return
+      }
+
       try {
-        item.roll(event)
+        await item.roll({ speaker: { token: token?.document } })
       } catch (error) {
         ui.notifications.error(`Error rolling item: ${error.message}`)
       }
@@ -123,13 +137,12 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
     /**
      * Handle check action
      * @private
-     * @param {object} event       The event
      * @param {object} actor       The actor
      * @param {object} token       The token object
      * @param {string} checkValue  The check value to roll
      * @param {boolean} isMultiToken Whether this is a multitoken action
      */
-    #handleCheckAction (event, actor, token, checkValue, isMultiToken = false) {
+    async #handleCheckAction (actor, token, checkValue, isMultiToken = false) {
       try {
         if (!actor) {
           console.warn('Cannot roll check: No actor available')
@@ -141,9 +154,44 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
           return
         }
 
-        actor.rollCheck(checkValue, token.document)
+        await actor.rollCheck(checkValue, { speaker: { token: token?.document } })
       } catch (error) {
         ui.notifications.error(`Error rolling check: ${error.message}`)
+      }
+    }
+
+    /**
+     * Handle consume action
+     * @private
+     * @param {object} actor    The actor
+     * @param {string} actionId The action id
+     */
+    async #handleConsumeAction (actor, actionId) {
+      try {
+        if (!game.ds4?.macros?.consumeItem) {
+          ui.notifications.warn(game.i18n.localize('tokenActionHud.ds4.consumeUnavailable'))
+          return
+        }
+
+        await game.ds4.macros.consumeItem(actionId, actor)
+      } catch (error) {
+        ui.notifications.error(`Error consuming item: ${error.message}`)
+      }
+    }
+
+    /**
+     * Handle generic check action
+     * @private
+     * @param {object} actor The actor
+     * @param {object} token The token
+     */
+    async #handleGenericCheckAction (actor, token) {
+      try {
+        if (!actor?.rollGenericCheck) return
+
+        await actor.rollGenericCheck({ speaker: { token: token?.document } })
+      } catch (error) {
+        ui.notifications.error(`Error rolling generic check: ${error.message}`)
       }
     }
 
