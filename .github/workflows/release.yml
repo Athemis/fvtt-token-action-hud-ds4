@@ -101,16 +101,28 @@ jobs:
           fi
 
       - name: Create GitHub Release
-        id: create_release
-        uses: ncipollo/release-action@v1.21.0
-        with:
-          tag: ${{ github.ref_name }}
-          name: ${{ env.package_name }} ${{ github.ref_name }}
-          body: ${{ steps.changelog.outputs.content }}
-          prerelease: ${{ steps.prerelease.outputs.is_prerelease }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          artifacts: './module.json,./module.zip'
-          makeLatest: ${{ steps.prerelease.outputs.is_prerelease == 'false' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ github.ref_name }}
+          PACKAGE_NAME: ${{ env.package_name }}
+          RELEASE_BODY: ${{ steps.changelog.outputs.content }}
+          IS_PRERELEASE: ${{ steps.prerelease.outputs.is_prerelease }}
+        run: |
+          PRERELEASE_FLAG=()
+          LATEST_FLAG=(--latest)
+
+          if [ "$IS_PRERELEASE" = "true" ]; then
+            PRERELEASE_FLAG=(--prerelease)
+            LATEST_FLAG=(--latest=false)
+          fi
+
+          gh release create "$TAG_NAME" \
+            ./module.json \
+            ./module.zip \
+            --title "$PACKAGE_NAME $TAG_NAME" \
+            --notes "$RELEASE_BODY" \
+            "${PRERELEASE_FLAG[@]}" \
+            "${LATEST_FLAG[@]}"
 
       - name: Get Compatibility
         if: "steps.prerelease.outputs.is_prerelease == 'false'"

@@ -30,6 +30,16 @@ test('release workflow exports Token Action HUD Core minimum version for changel
   assert.match(releaseWorkflow, /TAH_CORE_MINIMUM_VERSION: \$\{\{ env\.TAH_CORE_MINIMUM_VERSION \}\}/)
 })
 
+test('release workflow creates GitHub releases with gh cli', () => {
+  assert.doesNotMatch(releaseWorkflow, /ncipollo\/release-action/)
+  assert.match(releaseWorkflow, /GH_TOKEN: \$\{\{ secrets\.GITHUB_TOKEN \}\}/)
+  assert.match(releaseWorkflow, /gh release create "\$TAG_NAME"/)
+  assert.match(releaseWorkflow, /--title "\$PACKAGE_NAME \$TAG_NAME"/)
+  assert.match(releaseWorkflow, /--notes "\$RELEASE_BODY"/)
+  assert.match(releaseWorkflow, /\.\/module\.json/)
+  assert.match(releaseWorkflow, /\.\/module\.zip/)
+})
+
 test('changelog template starts with Token Action HUD Core requirement note', () => {
   assert.match(changelogConfig, /> \[!NOTE\]/)
   assert.match(changelogConfig, /> This module requires Token Action HUD Core \{\{ get_env\(name="TAH_CORE_MINIMUM_VERSION"\) \}\}\+\./)
