@@ -14,7 +14,7 @@
     "version": "This is auto replaced",
     "compatibility": {
         "minimum": "14",
-        "verified": "14.361",
+        "verified": "14.363",
         "maximum": "14"
     },
     "esmodules": ["./scripts/token-action-hud-ds4.min.js"],
