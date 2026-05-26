@@ -11,7 +11,7 @@
 - `npm run build` bundles and minifies source into `scripts/token-action-hud-ds4.min.js` plus sourcemap (for local development only; CI handles release builds).
 - `npm run dev` runs Rollup in watch mode.
 - `npm run lint` uses StandardJS with Foundry globals; `npm run lint:fix` applies fixes.
-- There is no test or typecheck script in this repo; use `npm run build` and `npm run lint` for local verification.
+- Use `npm run build`, `npm run lint`, and `npm test` for local verification.
 
 ## Source And Build Gotchas
 - Do not hand-edit `scripts/token-action-hud-ds4.min.js`; Rollup excludes it from input and rewrites it.
