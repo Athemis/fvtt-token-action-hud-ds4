@@ -12,9 +12,8 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
      * Build system actions
      * Called by Token Action HUD Core
      * @override
-     * @param {array} groupIds
      */
-    async buildSystemActions (groupIds) {
+    async buildSystemActions () {
       try {
         // Set actor and token variables
         this.actors = !this.actor ? this.#getSelectedActors() : [this.actor]
