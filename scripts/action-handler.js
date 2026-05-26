@@ -26,11 +26,6 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
           // Handle single actor
           this.actorType = this.actor.type
 
-          // Set items variable
-          let items = this.actor.items
-          items = coreModule.api.Utils.sortItemsByName(items)
-          this.items = items
-
           if (this.actorType === 'character' || this.actorType === 'creature') {
             this.#buildCharacterActions()
           }

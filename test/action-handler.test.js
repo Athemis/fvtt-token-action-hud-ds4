@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { beforeEach, test } from 'node:test'
 
 const actionGroups = []
+let sortItemsByNameCalls = 0
 
 globalThis.Hooks = {
   once: async (hook, handler) => {
@@ -28,7 +29,10 @@ globalThis.Hooks = {
             'DS4.ChecksBody': 'Body',
             DS4Quantity: 'Quantity'
           })[key] ?? key,
-          sortItemsByName: (items) => [...items].sort((a, b) => a.name.localeCompare(b.name))
+          sortItemsByName: (items) => {
+            sortItemsByNameCalls += 1
+            return [...items].sort((a, b) => a.name.localeCompare(b.name))
+          }
         }
       }
     })
@@ -39,6 +43,7 @@ const { ActionHandler } = await import('../scripts/action-handler.js')
 
 beforeEach(() => {
   actionGroups.length = 0
+  sortItemsByNameCalls = 0
   globalThis.game = {
     settings: {
       get: () => false
@@ -55,6 +60,27 @@ beforeEach(() => {
       }
     }
   }
+})
+
+test('system action builds do not pre-sort unused actor items', async () => {
+  const handler = new ActionHandler()
+  handler.actor = {
+    type: 'character',
+    system: {
+      checks: {},
+      combatValues: {
+        meleeAttack: { total: { valueOf: () => 8 } },
+        rangedAttack: { total: { valueOf: () => 6 } },
+        spellcasting: { total: { valueOf: () => 5 } },
+        targetedSpellcasting: { total: { valueOf: () => 4 } }
+      }
+    },
+    items: []
+  }
+
+  await handler.buildSystemActions([])
+
+  assert.equal(sortItemsByNameCalls, 0)
 })
 
 test('single actors include generic check and sorted consumable actions', async () => {
