@@ -7,7 +7,7 @@ const moduleJson = JSON.parse(await readFile(new URL('../module.json', import.me
 test('module metadata targets Foundry 14 and DS4 4 beta compatibility', () => {
   assert.deepEqual(moduleJson.compatibility, {
     minimum: '14',
-    verified: '14.361',
+    verified: '14.363',
     maximum: '14'
   })
 
