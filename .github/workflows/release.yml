@@ -47,6 +47,16 @@ jobs:
           test -f scripts/token-action-hud-ds4.min.js
           test -f scripts/token-action-hud-ds4.min.js.map
 
+      - name: Determine Token Action HUD Core Minimum Version
+        run: |
+          CORE_MINIMUM_VERSION=$(jq -r '.relationships.requires[] | select(.id == "token-action-hud-core") | .compatibility.minimum' module.json)
+
+          if [[ "$CORE_MINIMUM_VERSION" =~ ^[0-9]+\.[0-9]+$ ]]; then
+            CORE_MINIMUM_VERSION="$CORE_MINIMUM_VERSION.0"
+          fi
+
+          echo "TAH_CORE_MINIMUM_VERSION=$CORE_MINIMUM_VERSION" >> "$GITHUB_ENV"
+
       - name: Generate Changelog
         id: changelog
         uses: orhun/git-cliff-action@v4
@@ -55,6 +65,7 @@ jobs:
           args: --latest --strip header
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAH_CORE_MINIMUM_VERSION: ${{ env.TAH_CORE_MINIMUM_VERSION }}
 
       - name: Substitute Manifest and Download Links
         env:

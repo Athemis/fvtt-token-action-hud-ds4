@@ -4,7 +4,7 @@ header = """
 All notable changes to this project will be documented in this file.\n
 """
 body = """
-{% if version %}\n## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}\n{% else %}\n## [Unreleased]\n{% endif %}\n\n{% for group, commits in commits | group_by(attribute="group") %}\n### {{ group | striptags | trim | upper_first }}\n\n{% for commit in commits %}\n- {{ commit.message | trim | upper_first }}\n{% endfor %}\n{% endfor %}\n"""
+> [!NOTE]\n> This module requires Token Action HUD Core {{ get_env(name="TAH_CORE_MINIMUM_VERSION") }}+.\n\n{% if version %}\n## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}\n{% else %}\n## [Unreleased]\n{% endif %}\n\n{% for group, commits in commits | group_by(attribute="group") %}\n### {{ group | striptags | trim | upper_first }}\n\n{% for commit in commits %}\n- {% if commit.scope %}*({{ commit.scope }})* {% endif %}{{ commit.message | trim | upper_first }} ([{{ commit.id | truncate(length=7, end="") }}](https://github.com/Athemis/fvtt-token-action-hud-ds4/commit/{{ commit.id }}))\n{% endfor %}\n{% endfor %}\n"""
 trim = true
 
 [git]

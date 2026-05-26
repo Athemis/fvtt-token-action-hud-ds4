@@ -17,3 +17,25 @@ test('changelog template renders git-cliff conventional commit descriptions', ()
   assert.match(changelogConfig, /commit\.message\s*\|\s*trim\s*\|\s*upper_first/)
   assert.doesNotMatch(changelogConfig, /commit\.message\s*\|\s*split\(pat=": "\)/)
 })
+
+test('changelog template links each entry to its commit', () => {
+  assert.match(changelogConfig, /commit\.id\s*\|\s*truncate\(length=7, end=""\)/)
+  assert.match(changelogConfig, /github\.com\/Athemis\/fvtt-token-action-hud-ds4\/commit\/\{\{ commit\.id \}\}/)
+})
+
+test('release workflow exports Token Action HUD Core minimum version for changelog', () => {
+  assert.match(releaseWorkflow, /TAH_CORE_MINIMUM_VERSION=/)
+  assert.match(releaseWorkflow, /select\(\.id == "token-action-hud-core"\)/)
+  assert.match(releaseWorkflow, /\.compatibility\.minimum/)
+  assert.match(releaseWorkflow, /TAH_CORE_MINIMUM_VERSION: \$\{\{ env\.TAH_CORE_MINIMUM_VERSION \}\}/)
+})
+
+test('changelog template starts with Token Action HUD Core requirement note', () => {
+  assert.match(changelogConfig, /> \[!NOTE\]/)
+  assert.match(changelogConfig, /> This module requires Token Action HUD Core \{\{ get_env\(name="TAH_CORE_MINIMUM_VERSION"\) \}\}\+\./)
+})
+
+test('changelog template renders conventional commit scopes when present', () => {
+  assert.match(changelogConfig, /\{% if commit\.scope %\}/)
+  assert.match(changelogConfig, /\*\(\{\{ commit\.scope \}\}\)\*/)
+})
