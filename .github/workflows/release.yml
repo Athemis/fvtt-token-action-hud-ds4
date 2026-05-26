@@ -20,6 +20,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Validate semver tag
         run: |
@@ -103,18 +104,18 @@ jobs:
       - name: Send package to FoundryVTT registry
         if: "steps.prerelease.outputs.is_prerelease == 'false'"
         run: |
+          PAYLOAD=$(jq -n \
+            --arg id "${{ env.package_id }}" \
+            --arg version "${{ github.ref_name }}" \
+            --arg manifest "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/module.json" \
+            --arg notes "https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}" \
+            --argjson compatibility "${{ env.COMPATIBILITY }}" \
+            '{id: $id, release: {version: $version, manifest: $manifest, notes: $notes, compatibility: $compatibility}}')
+
           HTTP_RESPONSE=$(curl --silent --write-out "HTTPSTATUS:%{http_code}" -X POST 'https://api.foundryvtt.com/_api/packages/release_version/' \
             --header 'Authorization: ${{ secrets.PACKAGE_RELEASE_TOKEN }}' \
             --header 'Content-Type: application/json' \
-            --data '{
-              "id": "${{ env.package_id }}",
-              "release": {
-                "version": "${{ github.ref_name }}",
-                "manifest": "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/module.json",
-                "notes": "https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}",
-                "compatibility": ${{ env.COMPATIBILITY }}
-              }
-            }')
+            --data "$PAYLOAD")
 
           HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed -e 's/HTTPSTATUS:.*//g')
           HTTP_STATUS=$(echo "$HTTP_RESPONSE" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
