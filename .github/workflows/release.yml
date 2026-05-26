@@ -1,0 +1,128 @@
+name: Auto-Release on Tag Push
+
+on:
+  push:
+    tags:
+      - '[0-9]*.[0-9]*.[0-9]*'
+
+env:
+  package_name: Token Action HUD DS4
+  package_id: token-action-hud-ds4
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Validate semver tag
+        run: |
+          if [[ ! "${{ github.ref_name }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
+            echo "Invalid tag format: ${{ github.ref_name }}"
+            exit 1
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Install Dependencies
+        run: npm ci || npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify Build Artifacts
+        run: |
+          test -f scripts/token-action-hud-ds4.min.js
+          test -f scripts/token-action-hud-ds4.min.js.map
+
+      - name: Generate Changelog
+        id: changelog
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --latest --strip header
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Substitute Manifest and Download Links
+        run: |
+          jq --arg version "${{ github.ref_name }}" \
+             --arg url "https://github.com/${{ github.repository }}" \
+             --arg manifest "https://github.com/${{ github.repository }}/releases/latest/download/module.json" \
+             --arg download "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/module.zip" \
+             '.version = $version | .url = $url | .manifest = $manifest | .download = $download' \
+             module.json > module.json.tmp && mv module.json.tmp module.json
+
+      - name: Create module.zip
+        run: |
+          zip -r ./module.zip \
+            module.json \
+            readme.md \
+            license.md \
+            languages/ \
+            scripts/token-action-hud-ds4.min.js \
+            scripts/token-action-hud-ds4.min.js.map
+
+      - name: Determine Prerelease
+        id: prerelease
+        run: |
+          if [[ "${{ github.ref_name }}" =~ - ]]; then
+            echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: ncipollo/release-action@v1.21.0
+        with:
+          tag: ${{ github.ref_name }}
+          name: ${{ env.package_name }} ${{ github.ref_name }}
+          body: ${{ steps.changelog.outputs.content }}
+          prerelease: ${{ steps.prerelease.outputs.is_prerelease }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifacts: './module.json,./module.zip'
+          makeLatest: ${{ steps.prerelease.outputs.is_prerelease == 'false' }}
+
+      - name: Get Compatibility
+        if: "steps.prerelease.outputs.is_prerelease == 'false'"
+        run: |
+          echo 'COMPATIBILITY<<EOF' >> "$GITHUB_ENV"
+          jq .compatibility module.json >> "$GITHUB_ENV"
+          echo 'EOF' >> "$GITHUB_ENV"
+
+      - name: Send package to FoundryVTT registry
+        if: "steps.prerelease.outputs.is_prerelease == 'false'"
+        run: |
+          PAYLOAD=$(jq -n \
+            --arg id "${{ env.package_id }}" \
+            --arg version "${{ github.ref_name }}" \
+            --arg manifest "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/module.json" \
+            --arg notes "https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}" \
+            --argjson compatibility "${{ env.COMPATIBILITY }}" \
+            '{id: $id, release: {version: $version, manifest: $manifest, notes: $notes, compatibility: $compatibility}}')
+
+          HTTP_RESPONSE=$(curl --silent --write-out "HTTPSTATUS:%{http_code}" -X POST 'https://api.foundryvtt.com/_api/packages/release_version/' \
+            --header 'Authorization: ${{ secrets.PACKAGE_RELEASE_TOKEN }}' \
+            --header 'Content-Type: application/json' \
+            --data "$PAYLOAD")
+
+          HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed -e 's/HTTPSTATUS:.*//g')
+          HTTP_STATUS=$(echo "$HTTP_RESPONSE" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
+
+          echo "$HTTP_BODY"
+
+          if [ ! "$HTTP_STATUS" -eq 200 ]; then
+            echo "Error [HTTP status: $HTTP_STATUS]"
+            exit 1
+          fi

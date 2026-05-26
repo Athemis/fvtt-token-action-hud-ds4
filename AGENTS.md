@@ -3,18 +3,19 @@
 ## Project Shape
 - Foundry VTT module for the DS4 system; it depends on `token-action-hud-core` and is packaged through `module.json`.
 - Runtime entrypoint is the generated `scripts/token-action-hud-ds4.min.js`; source lives in `scripts/*.js` and is bundled by Rollup.
+- The minified bundle and sourcemap are **not** tracked in git; they are built by CI when a release tag is pushed.
 - `module.json` has release-time placeholders for `url`, `version`, `manifest`, and `download`; GitHub release workflow replaces them from the release tag.
 
 ## Commands
 - Install with `npm ci` when the lockfile works; CI falls back to `npm install`.
-- `npm run build` bundles and minifies source into the tracked `scripts/token-action-hud-ds4.min.js` plus sourcemap.
+- `npm run build` bundles and minifies source into `scripts/token-action-hud-ds4.min.js` plus sourcemap (for local development only; CI handles release builds).
 - `npm run dev` runs Rollup in watch mode.
 - `npm run lint` uses StandardJS with Foundry globals; `npm run lint:fix` applies fixes.
-- There is no test or typecheck script in this repo; use `npm run build` and `npm run lint` for local verification.
+- Use `npm run build`, `npm run lint`, and `npm test` for local verification.
 
 ## Source And Build Gotchas
-- If you change any non-minified file in `scripts/`, run `npm run build` and include the updated generated minified file.
 - Do not hand-edit `scripts/token-action-hud-ds4.min.js`; Rollup excludes it from input and rewrites it.
+- Generated artifacts are built exclusively by CI; contributors should not commit them.
 - CI uses Node 22 and runs build on pushes/PRs; lint is currently `continue-on-error` in CI but should still be treated as required locally.
 
 ## Architecture Notes

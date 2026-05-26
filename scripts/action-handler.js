@@ -12,8 +12,8 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
      * Build system actions
      * Called by Token Action HUD Core
      * @override
-     * @param {array} groupIds
      */
+    // eslint-disable-next-line no-unused-vars
     async buildSystemActions (groupIds) {
       try {
         // Set actor and token variables

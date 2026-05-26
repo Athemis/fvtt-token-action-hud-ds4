@@ -25,6 +25,11 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Verify Build Artifacts
+        run: |
+          test -f scripts/token-action-hud-ds4.min.js
+          test -f scripts/token-action-hud-ds4.min.js.map
+
       - name: Test
         run: npm test
 

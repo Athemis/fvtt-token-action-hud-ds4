@@ -4,6 +4,10 @@
 
 Token Action HUD is a repositionable HUD of actions for a selected token.
 
+## Development Note
+
+This module's minified JavaScript bundle (`scripts/token-action-hud-ds4.min.js`) is built automatically by CI/CD when a release tag is pushed. It is not tracked in the repository.
+
 ![Token Action HUD](.github/readme/token-action-hud-ds4.webp)
 
 # Features

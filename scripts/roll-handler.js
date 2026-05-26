@@ -31,14 +31,7 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
 
       // If single actor is selected and not a multitoken action
       if (this.actor && !isMultiToken) {
-        await this.#handleAction(
-          event,
-          this.actor,
-          this.token,
-          actionTypeId,
-          actionId,
-          false
-        )
+        await this.#handleAction(event, this.actor, this.token, actionTypeId, actionId, isMultiToken)
         return
       }
 
@@ -57,9 +50,8 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
      * Handle action hover
      * Called by Token Action HUD Core when an action is hovered on or off
      * @override
-     * @param {object} event        The event
-     * @param {string} encodedValue The encoded value
      */
+    // eslint-disable-next-line no-unused-vars
     async handleActionHover (event, encodedValue) {
       // This method will be implemented in a future update
       // for handling hover events on actions
@@ -69,9 +61,8 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
      * Handle group click
      * Called by Token Action HUD Core when a group is right-clicked while the HUD is locked
      * @override
-     * @param {object} event The event
-     * @param {object} group The group
      */
+    // eslint-disable-next-line no-unused-vars
     async handleGroupClick (event, group) {
       // This method will be implemented in a future update
       // for handling group click events when the HUD is locked
@@ -80,13 +71,14 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
     /**
      * Handle action
      * @private
-     * @param {object} event        The event
+     * @param {Event} event         The originating event
      * @param {object} actor        The actor
      * @param {object} token        The token
      * @param {string} actionTypeId The action type id
      * @param {string} actionId     The actionId
-     * @param {boolean} isMultiToken Whether this is a multitoken action
+     * @param {boolean} isMultiToken Whether the action is for multiple tokens
      */
+    // eslint-disable-next-line no-unused-vars
     async #handleAction (event, actor, token, actionTypeId, actionId, isMultiToken = false) {
       try {
         switch (actionTypeId) {
@@ -145,8 +137,9 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
      * @param {object} actor       The actor
      * @param {object} token       The token object
      * @param {string} checkValue  The check value to roll
-     * @param {boolean} isMultiToken Whether this is a multitoken action
+     * @param {boolean} isMultiToken Whether the action is for multiple tokens
      */
+    // eslint-disable-next-line no-unused-vars
     async #handleCheckAction (actor, token, checkValue, isMultiToken = false) {
       try {
         if (!actor) {
