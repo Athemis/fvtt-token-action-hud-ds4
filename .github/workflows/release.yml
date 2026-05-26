@@ -23,9 +23,11 @@ jobs:
           persist-credentials: false
 
       - name: Validate semver tag
+        env:
+          TAG_NAME: ${{ github.ref_name }}
         run: |
-          if [[ ! "${{ github.ref_name }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
-            echo "Invalid tag format: ${{ github.ref_name }}"
+          if [[ ! "$TAG_NAME" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
+            echo "Invalid tag format: $TAG_NAME"
             exit 1
           fi
 
@@ -55,11 +57,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Substitute Manifest and Download Links
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+          REPOSITORY: ${{ github.repository }}
         run: |
-          jq --arg version "${{ github.ref_name }}" \
-             --arg url "https://github.com/${{ github.repository }}" \
-             --arg manifest "https://github.com/${{ github.repository }}/releases/latest/download/module.json" \
-             --arg download "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/module.zip" \
+          jq --arg version "$TAG_NAME" \
+             --arg url "https://github.com/$REPOSITORY" \
+             --arg manifest "https://github.com/$REPOSITORY/releases/latest/download/module.json" \
+             --arg download "https://github.com/$REPOSITORY/releases/download/$TAG_NAME/module.zip" \
              '.version = $version | .url = $url | .manifest = $manifest | .download = $download' \
              module.json > module.json.tmp && mv module.json.tmp module.json
 
@@ -75,8 +80,10 @@ jobs:
 
       - name: Determine Prerelease
         id: prerelease
+        env:
+          TAG_NAME: ${{ github.ref_name }}
         run: |
-          if [[ "${{ github.ref_name }}" =~ - ]]; then
+          if [[ "$TAG_NAME" =~ - ]]; then
             echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
           else
             echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
@@ -103,17 +110,22 @@ jobs:
 
       - name: Send package to FoundryVTT registry
         if: "steps.prerelease.outputs.is_prerelease == 'false'"
+        env:
+          PACKAGE_ID: ${{ env.package_id }}
+          PACKAGE_RELEASE_TOKEN: ${{ secrets.PACKAGE_RELEASE_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          TAG_NAME: ${{ github.ref_name }}
         run: |
           PAYLOAD=$(jq -n \
-            --arg id "${{ env.package_id }}" \
-            --arg version "${{ github.ref_name }}" \
-            --arg manifest "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/module.json" \
-            --arg notes "https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}" \
-            --argjson compatibility "${{ env.COMPATIBILITY }}" \
+            --arg id "$PACKAGE_ID" \
+            --arg version "$TAG_NAME" \
+            --arg manifest "https://github.com/$REPOSITORY/releases/download/$TAG_NAME/module.json" \
+            --arg notes "https://github.com/$REPOSITORY/releases/tag/$TAG_NAME" \
+            --argjson compatibility "$COMPATIBILITY" \
             '{id: $id, release: {version: $version, manifest: $manifest, notes: $notes, compatibility: $compatibility}}')
 
           HTTP_RESPONSE=$(curl --silent --write-out "HTTPSTATUS:%{http_code}" -X POST 'https://api.foundryvtt.com/_api/packages/release_version/' \
-            --header 'Authorization: ${{ secrets.PACKAGE_RELEASE_TOKEN }}' \
+            --header "Authorization: $PACKAGE_RELEASE_TOKEN" \
             --header 'Content-Type: application/json' \
             --data "$PAYLOAD")
 
