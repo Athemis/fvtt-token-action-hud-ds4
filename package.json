@@ -11,7 +11,7 @@
     "@babel/eslint-parser": "^7.29.7",
     "@rollup/plugin-multi-entry": "^7.1.0",
     "@rollup/plugin-terser": "^1.0.0",
-    "eslint-plugin-jsdoc": "^63.0.2",
+    "eslint-plugin-jsdoc": "^63.0.7",
     "rollup": "^4.62.0",
     "standard": "^17.1.2"
   },
