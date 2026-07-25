@@ -146,7 +146,7 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
               const img = CONFIG.DS4.icons.checks[checkId]
               const listName = `${actionType}${coreModule.api.Utils.i18n(`DS4.Checks${checkId}`)}`
               const encodedValue = [actionType, checkId].join(this.delimiter)
-              const infoText = { text: check[1].valueOf() }
+              const infoText = { text: check[1]?.valueOf() ?? 0 }
               return {
                 id,
                 name,
