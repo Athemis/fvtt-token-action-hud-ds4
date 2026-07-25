@@ -39,7 +39,7 @@
                 "id": "ds4",
                 "compatibility": {
                     "minimum": "4.0.0-beta.5",
-                    "verified": "4.0.0-beta.5"
+                    "verified": "4.0.0-rc.1"
                 }
             }
         ],
