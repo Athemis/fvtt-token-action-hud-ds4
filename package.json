@@ -7,7 +7,7 @@
     "lint:fix": "standard --global Hooks --global ui --global canvas --global CONFIG --global game --fix"
   },
   "devDependencies": {
-    "@babel/core": "^8.0.5",
+    "@babel/core": "^8.0.6",
     "@babel/eslint-parser": "^8.0.5",
     "@rollup/plugin-multi-entry": "^7.1.0",
     "@rollup/plugin-terser": "^1.0.0",
