@@ -10,7 +10,7 @@
     "@babel/core": "^8.0.7",
     "@babel/eslint-parser": "^8.0.7",
     "@rollup/plugin-multi-entry": "^7.1.0",
-    "@rollup/plugin-terser": "^1.0.0",
+    "@rollup/plugin-terser": "^1.0.2",
     "eslint-plugin-jsdoc": "^65.2.4",
     "rollup": "^4.64.5",
     "standard": "^17.1.2"
